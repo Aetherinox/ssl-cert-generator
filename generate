@@ -23,9 +23,9 @@
 #                  📄 01.pem
 #               📄 crlnumber
 #               📄 crlnumber.old
-#               📄 index.txt
-#               📄 index.txt.attr
-#               📄 index.txt.old
+#               📄 certs.db
+#               📄 certs.db.attr
+#               📄 certs.db.old
 #               📄 rootCA.cnf
 #               📄 rootCA.crt
 #               📄 rootCA.key.main-01.enc.priv.pem
@@ -284,7 +284,7 @@ FOLDER_ROOT_SUB_GEN=generated
 FILE_ROOTCA_BASE=rootCA
 FILE_DOMAIN_BASE=domain
 FILE_MASTER_BASE=9a
-FILE_ROOTCA_INDEX=index
+FILE_ROOTCA_DB=certs
 FILE_ROOTCA_CRLNUMBER=crlnumber
 FILE_ROOTCA_SERIAL=serial
 
@@ -348,7 +348,7 @@ EXT_CSR="csr"
 EXT_CRL="crl"
 EXT_PFX="pfx"
 EXT_CNF="cnf"
-EXT_TXT="txt"
+EXT_TXT="db"
 EXT_OLD="old"
 EXT_ATTR="attr"
 
@@ -407,10 +407,10 @@ readStatus()
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CNF}${END}" "❌${END}"
     fi
 
-    if ( set +f; ls ${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT} ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}${END}" "✔️${END}"
+    if ( set +f; ls ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT} ) 1> /dev/null 2>&1; then
+            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}${END}" "❌${END}"
+            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}" "❌${END}"
     fi
 
     if ( set +f; ls ${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER} ) 1> /dev/null 2>&1; then
@@ -687,9 +687,9 @@ opt_usage()
     printf '  %-5s %-40s\n' "    " "${GREY3}          📄 01.${EXT_PEM}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_CRLNUMBER}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_INDEX}.${EXT_TXT}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_OLD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${EXT_CNF}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${EXT_CRT}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" 1>&2
@@ -1304,35 +1304,35 @@ if grep -R "XX.XX.XX.XX" "${PATH_ROOTCA_BASE}.${EXT_CNF}" >/dev/null 2>&1; then
 fi
 
 # #
-#   rootCA > Clean > index.txt
+#   rootCA > Clean > certs.db
 # #
 
-if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-001${END}" "${GREY3}${LNG_STEP_CERTS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}${END}"
-> "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}"
+if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-001${END}" "${GREY3}${LNG_STEP_CERTS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}"
+> "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}"
 else
-    touch "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}"
-    chmod 600 "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}"
+    touch "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}"
+    chmod 600 "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}"
 fi
 
 # #
-#   rootCA > Setup > index.txt.attr
+#   rootCA > Setup > certs.db.attr
 # #
 
-if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-002${END}" "${GREY3}${LNG_STEP_ATTRIBS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.attr${END}"
-> "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}"
+if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-002${END}" "${GREY3}${LNG_STEP_ATTRIBS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.attr${END}"
+> "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}"
 else
-    touch "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}"
+    touch "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}"
 fi
 
-echo "unique_subject = yes" > "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}"
+echo "unique_subject = yes" > "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}"
 
 # #
 #   rootCA > Reset > crlnumber
 # #
 
-if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}" ]; then
+if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-003${END}" "${GREY3}${LNG_STEP_CRL_RESET} 00${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}${END}"
     echo "00" > "${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}"
 else
@@ -1365,21 +1365,21 @@ if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}" ]; then
 fi
 
 # #
-#   rootCA > Delete > index.txt.attr.old
+#   rootCA > Delete > certs.db.attr.old
 # #
 
-if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}" ]; then
-    rm "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}${END}"
+if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}" ]; then
+    rm "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}${END}"
 fi
 
 # #
-#   rootCA > Delete > index.txt.old
+#   rootCA > Delete > certs.db.old
 # #
 
-if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_OLD}" ]; then
-    rm "${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_OLD}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_INDEX}.${EXT_TXT}.${EXT_OLD}${END}"
+if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}" ]; then
+    rm "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}"
 fi
 
 # #
@@ -1563,8 +1563,8 @@ fi
 # #
 #   Domain > Create > domain.crt
 #
-#   creates certificate, registers the cert within the rootCA index.txt.
-#   you must remove the certificate from the index.txt to run this again.
+#   creates certificate, registers the cert within the rootCA certs.db.
+#   you must remove the certificate from the certs.db to run this again.
 #   .crt file does NOT have the Bag Attributes at the top.
 #
 #   this command must run last, otherwise it wont generate cert serial
@@ -1882,8 +1882,8 @@ fi
 # #
 #   Naster > Create > 9a.crt
 #
-#   creates certificate, registers the cert within the rootCA index.txt.
-#   you must remove the certificate from the index.txt to run this again.
+#   creates certificate, registers the cert within the rootCA certs.db.
+#   you must remove the certificate from the certs.db to run this again.
 #   .crt file does NOT have the Bag Attributes at the top.
 #
 #   this command must run last, otherwise it wont generate cert serial
