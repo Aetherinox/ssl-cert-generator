@@ -62,6 +62,8 @@ The script comes with two modes:
 
 This mode generates entirely new keys, both private and public; as well as new certificates. If you have existing private keys you wish to generate new public keys or certificates for; this is **not** the setting you should use. See [Existing Key Generation](#existing-key-generation).
 
+<br />
+
 We given two different options for algorithms:
 
 - **RSA** keys are the product of two prime numbers. This algorithm provides higher compatibility and is more widely used, especially in traditional digital signing scenarios. It is the most trusted algorithm of the two, whereas, some argue that ECC keys could be breakable in the future as quantum computers become more mainstream.
@@ -87,16 +89,33 @@ generate --new --algorithm rsa
 
 <br />
 
+On top of defining the algorithm, you can also specify the bits for RSA. By default, this parameter is set to `4096`.
+
+```shell
+generate --new --algorithm rsa --bits 4096
+```
+
+<br />
+
 If you wish for your keys to have a password, you must supply one using the `-P, --pass` argument.
 
 ```shell
-generate --new --algorithm rsa --pass "YourPassword"
+generate --new --algorithm rsa --bits 4096 --pass "YourPassword"
+```
+
+If you are handling more complex setups and generating new keys based on old private keys, you can specify `--passin` and `--passout`
+
+<br />
+
+If you wish for your keys to have a password, you must supply one using the `-P, --pass` argument.
+
+```shell
+generate --new --algorithm rsa --bits 4096 --pass "YourPassword" --passin "IncomingPassword" --passout "OutgoingPassword"
 ```
 
 <br />
 
 #### ECC
-
 
 <br />
 
@@ -104,6 +123,13 @@ To generate `ECC` / `ECDSA`:
 
 ```shell ignore
 generate --new --algorithm ecc --pass "YourPassword"
+```
+
+<br />
+
+If you are creating new keys based on existing keys with passwords, you can specify `--passin` and `--passout`
+
+```shell
 generate --new --algorithm ecc --pass "YourPassword" --passin "YourPassword" --passout "YourPassword"
 ```
 
@@ -449,7 +475,7 @@ generate --comment "My Existing Key" --name "Original Key"
 ### Algorithm
 <small>`--algorithm, -a`</small>
 
-The **algorithm** parameter allows you to specify whether you generate RSA based keys, or ECC / EDCSA.
+The **algorithm** parameter allows you to specify whether you generate RSA based keys, or ECC / ECDSA.
 
 For ECC keys, use this parameter in combination with `--curve`; otherwise the default curve will be `secp384r1`.
 
@@ -462,7 +488,7 @@ generate --algorithm ecc --curve secp384r1
 ### Curve
 <small>`--curve, -V`</small>
 
-The **curve** parameter allows you to specify which curve to use for ECC / EDCSA. This parameter accepts the same values offered by OpenSSL.
+The **curve** parameter allows you to specify which curve to use for ECC / ECDSA. This parameter accepts the same values offered by OpenSSL.
 
 ```shell
 generate --algorithm ecc --curve secp384r1
@@ -473,7 +499,7 @@ generate --algorithm ecc --curve secp384r1
 ### Bits
 <small>`--bits, -b`</small>
 
-The **curve** parameter allows you to specify which curve to use for ECC / EDCSA. This parameter accepts the same values offered by OpenSSL.
+The **curve** parameter allows you to specify which curve to use for ECC / ECDSA. This parameter accepts the same values offered by OpenSSL.
 
 ```shell
 generate --algorithm ecc --curve secp384r1
