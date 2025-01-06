@@ -157,33 +157,36 @@ x509_extensions                 = x509_rootCA
 
             [ dn_rootCA ]
             countryName                     = Country Name 2 Letter
-            stateOrProvinceName             = State or Province Name
-            localityName                    = Locality Name
-            0.organizationName              = Organization Name
-            organizationalUnitName          = Organizational Unit Name
-            commonName                      = Common Name
-            emailAddress                    = Email Address
-            description                     = Description (main purpose for the certificate)
-            givenName                       = Given Name
-            title                           = Title
-            initials                        = Certificate Initials
-
-            # #
-            #   Root CA > Distinguished Name - Defaults
-            #
-            #   <https://en.wikipedia.org/wiki/Certificate_signing_request>
-            # #
-
             countryName_default             = NA
+
+            stateOrProvinceName             = State or Province Name
             stateOrProvinceName_default     = NA
+
+            localityName                    = Locality Name
             localityName_default            = NA
+
+            0.organizationName              = Organization Name
             0.organizationName_default      = Company Name
+
+            organizationalUnitName          = Organizational Unit Name
             organizationalUnitName_default  = Root Certificate Authority
+
+            commonName                      = Common Name
             commonName_default              = Root Certificate Authority
+
+            emailAddress                    = Email Address
             emailAddress_default            = system@domain.local
+
+            description                     = Description (main purpose for the certificate)
             description_default             = Organization Certificate Authority
+
+            givenName                       = Given Name
             givenName_default               = Root Certificate Authority
+
+            title                           = Title
             title_default                   = Root Certificate Authority
+
+            initials                        = Certificate Initials
             initials_default                = 001-ssl-ca
 
             # #

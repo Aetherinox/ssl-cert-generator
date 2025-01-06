@@ -13,8 +13,11 @@
 - [Commands](#commands)
   - [Help](#help)
   - [New](#new)
-  - [Home](#home)
+  - [Algorithm](#algorithm)
+  - [Curve](#curve)
+  - [Bits](#bits)
   - [Folders](#folders)
+    - [homeFolder](#homefolder)
     - [certsFolder](#certsfolder)
     - [rootcaFolder](#rootcafolder)
     - [domainFolder](#domainfolder)
@@ -53,7 +56,7 @@ The script comes with two modes:
 
 ### New Key Generation
 
-<small>`--new, -n</small>
+<small>`--new, -n`</small>
 
 This mode generates entirely new keys, both private and public; as well as new certificates. If you have existing private keys you wish to generate new public keys or certificates for; this is **not** the setting you should use. See [Existing Key Generation](#existing-key-generation).
 
@@ -69,6 +72,14 @@ If you wish for your keys to have a password, you must supply one using the `--p
 
 ```shell
 generate --new --password "YourPassword"
+```
+
+<br />
+
+To generate `ECC` / `ECDSA`:
+
+```shell ignore
+generate --new --algorithm ecc --pass "YourPassword"
 ```
 
 <br />
@@ -217,7 +228,7 @@ extendedKeyUsage        = critical, serverAuth, clientAuth
 ## Authentication Authority
 These certs / keys can be utilized for things such as SSH authentication. They are ready to be imported into a security device such as a Yubikey, and will typically go into `Slot 9A`. This can be achieved by using the [Yubikey Manager](https://www.yubico.com/support/download/yubikey-manager/) application
 
-The Authenication certs are not restricted in their usage permissions and are left blank. To assign certain usages to these certs, edit the `rootCA.cnf` file and define the desired usages.
+The authentication certs are not restricted in their usage permissions and are left blank. To assign certain usages to these certs, edit the `rootCA.cnf` file and define the desired usages.
 
 ```ini
 [ x509_9a_master ]
@@ -278,17 +289,19 @@ This utility has the following available arguments you can pass:
 | --- | --- |
 | <small>`--new, -n`</small> | <small>Generates new keys if existing private keys do not exist in the base folders `rootCA`, `domain`, and `master`</small> |
 | <small>`--import, -i`</small> | <small>Import existing RSA or ECC private key, and generate new public keys and certificates based on the private key.</small> |
-| <small>`--keytype, -K`</small> | <small>Type of key to generate <br /> Options: `ecc`, `rsa` <br /> Default: `rsa`</small> |
+| <small>`--algorithm, -a`</small> | <small>Algorithm to use for key generation. These are the values available within OpenSSL. <br /><br /> `ecc`, `rsa` <br /><br /> Default: `rsa`</small> |
+| <small>`--curve, -V`</small> | <small>ECC curve; accepts all curves available through OpenSSL <br /><br /> `secp384r1`, `secp521r1`, `sect571k1`, `c2pnb368w1`, `c2tnb431r1`, `prime256v1` <br /><br /> Default: `rsa`</small> |
+| <small>`--bits, -b`</small> | <small>Specifies the number of bits to use with an RSA key <br /><br /> Default: `4096`</small> |
 | <small>`--friendlyname, -N`</small> | <small>Friendly name to use for certificate</small> |
 | <small>`--pass, -P`</small> | <small>Password to use for certs and keys</small> |
 | <small>`--passin, -I`</small> | <small>Password to use for imported keys, and private keys needed to make new keys</small> |
 | <small>`--passout, -O`</small> | <small>Password to use when creating a new private key from an existing, this password is applied to the newer keys</small> |
-| <small>`--homeFolder, -H`</small> | <small>Set the home folder <br/> This is the folder where the `generate` app currently resides.<br/>Default: `${PWD}`</small> |
-| <small>`--certsFolder, -C`</small> | <small>Set the certs folder <br/>Re-names the `certificates` folder.<br/>Default: `certificates`</small> |
-| <small>`--rootcaFolder, -R`</small> | <small>Set the rootCA folder <br/> Default: `rootCA`</small> |
-| <small>`--domainFolder, -D`</small> | <small>Set the domain folder <br /> Default: `domain`</small> |
-| <small>`--days, -d`</small> | <small>Certificate expiration time in days <br /> Default: `36500`</small> |
-| <small>`--comment, -t`</small> | <small>specify a comment to add to RSA and OpenSSH keys <br /> Default: `OCG 1.0.0.0`</small> |
+| <small>`--homeFolder, -H`</small> | <small>Set the home folder <br/> This is the folder where the `generate` app currently resides.<br/><br/> Default: `${PWD}`</small> |
+| <small>`--certsFolder, -C`</small> | <small>Set the certs folder <br/>Re-names the `certificates` folder. <br/><br/> Default: `certificates`</small> |
+| <small>`--rootcaFolder, -R`</small> | <small>Set the rootCA folder <br/><br/> Default: `rootCA`</small> |
+| <small>`--domainFolder, -D`</small> | <small>Set the domain folder <br /><br/> Default: `domain`</small> |
+| <small>`--days, -d`</small> | <small>Certificate expiration time in days <br /><br/> Default: `36500`</small> |
+| <small>`--comment, -t`</small> | <small>specify a comment to add to RSA and OpenSSH keys <br /><br/> Default: `OCG 1.0.0.0`</small> |
 | <small>`--clean, -c`</small> | <small>Remove all files, but keep OpenSSL config `rootCA.cnf` and main private `.pem` keys</small> |
 | <small>`--wipe, -w`</small> | <small>Remove every file in `certificates` / `certsFolder` folder, `rootcaFolder` OpenSSL config `rootCA.cnf` excluded and will remain</small> |
 | <small>`--vars, -v`</small> | <small>List all variables / paths</small> |
@@ -311,7 +324,7 @@ This utility includes a large list of options and commands. A complete list can 
 
 ### Help
 
-<small>`--help, -z</small>
+<small>`--help, -z`</small>
 
 Displays helpful information about the script, including all available commands.
 
@@ -325,42 +338,50 @@ generator --help
 
 ```
   Options:                                         
-        -n,  --new               Generate new keys
-                                     requires that the utility folders be clean. any existing private keys will block
-                                     this command from generating new keys. delete any private key files ending with
-                                     .pem or .key
+        -n,  --new               Generate new keys                       
+                                 requires that the utility folders be clean. any existing private keys will block
+                                 this command from generating new keys. delete any private key files ending with
+                                 .pem or .key             
         -i,  --import            Import existing RSA or ECC private key
-                                     allows you to import an existing private key from another directory.
-                                     must specify a private key with an intact header. the following are acceptable:
-                                        - BEGIN ENCRYPTED PRIVATE KEY
-                                        - BEGIN PRIVATE KEY
-                                        - BEGIN EC PRIVATE KEY
-        -K,  --keytype           Type of key to generate
-                                     options: ec, rsa
+                                 allows you to import an existing private key from another directory.
+                                 must specify a private key with an intact header. the following are acceptable:
+                                    - BEGIN ENCRYPTED PRIVATE KEY
+                                    - BEGIN PRIVATE KEY     
+                                    - BEGIN EC PRIVATE KEY  
+        -a,  --algorithm         Type of key to generate             
+                                    - ecc                   
+                                    - rsa                   
+        -V,  --curve             ECC curve                           
+                                 accepts any curves included with OpenSSL
+                                    - secp384r1             
+                                    - secp521r1             
+                                    - sect571k1             
+                                    - c2pnb368w1            
+                                    - c2tnb431r1            
+                                    - prime256v1            
         -N,  --friendlyname      Friendly name to use for certificate
-        -P,  --pass              Password to use for certs and keys
-        -I,  --passin            Password in
-        -O,  --passout           Password out
-        -H,  --homeFolder        Set the home folder - default: /home/aetherx/Desktop
+        -P,  --pass              Password to use for certs and keys  
+        -I,  --passin            Password in                         
+        -O,  --passout           Password out                        
+        -H,  --homeFolder        Set the home folder
         -C,  --certsFolder       Set the certs folder - default: certificates
         -R,  --rootcaFolder      Set the rootCA folder - default: rootCA
         -D,  --domainFolder      Set the domain folder - default: domain
-        -d,  --days              Certificate expiration time in days
+        -d,  --days              Certificate expiration time in days     
         -t,  --comment           specify a comment to add to RSA and OpenSSH keys
         -c,  --clean             Remove all files, but keep rootCA.cnf, and main private pem keys
         -w,  --wipe              Remove every file in certificates folder except rootCA.cnf
         -v,  --vars              List all variables / paths              
         -s,  --status            Output a list of certs & keys generated to check for all files
-        -v,  --version           Current version of this generator
-        -x,  --dev               Developer mode
-        -z,  --help              Show this help menu
+        -v,  --version           Current version of this generator       
+        -x,  --dev               Developer mode                          
+        -z,  --help              Show this help menu                     
 ```
 
 <br />
 
 ### New
 <small>`--new, -n`</small>
-
 
 The new command generates new keys and certificates, including the main private keys. If you do not specify this flag, you must already have existing private keys added so that it will build certificates and public keys based on the private keys.
 
@@ -385,14 +406,37 @@ generate --comment "My Existing Key" --name "Original Key"
 
 <br />
 
-### Home
+### Algorithm
+<small>`--algorithm, -a`</small>
 
-<small>`--homeFolder, -H`</small>
+The **algorithm** parameter allows you to specify whether you generate RSA based keys, or ECC / EDCSA.
 
-By default, the generator will run in whatever folder the script was called from; however, you can force it to use another path:
+For ECC keys, use this parameter in combination with `--curve`; otherwise the default curve will be `secp384r1`.
 
 ```shell
-generator --homeFolder /path/to/folder
+generate --algorithm ecc --curve secp384r1
+```
+
+<br />
+
+### Curve
+<small>`--curve, -V`</small>
+
+The **curve** parameter allows you to specify which curve to use for ECC / EDCSA. This parameter accepts the same values offered by OpenSSL.
+
+```shell
+generate --algorithm ecc --curve secp384r1
+```
+
+<br />
+
+### Bits
+<small>`--bits, -b`</small>
+
+The **curve** parameter allows you to specify which curve to use for ECC / EDCSA. This parameter accepts the same values offered by OpenSSL.
+
+```shell
+generate --algorithm ecc --curve secp384r1
 ```
 
 <br />
@@ -422,6 +466,18 @@ By default, this script utilizes the following structure:
 <br />
 
 Parameters are provided so that these folder names can be changed.
+
+<br />
+
+#### homeFolder
+
+<small>`--homeFolder, -H`</small>
+
+By default, the generator will run in whatever folder the script was called from; however, you can force it to use another path:
+
+```shell
+generator --homeFolder /path/to/folder
+```
 
 <br />
 
@@ -492,7 +548,7 @@ generate --password "YourExistingPassword" --passout "YourNewPassword"
 
 ### Friendly Name
 
-<small>`--friendlyname, -N</small>
+<small>`--friendlyname, -N`</small>
 
 This specifies the "friendly name" for the certificates and private key. This name is typically displayed in list boxes by software importing the file.
 
@@ -504,7 +560,7 @@ generate --new --name "My certificate" --password "YourExistingPassword"
 
 ### Days / Expiration
 
-<small>`--days, -d</small>
+<small>`--days, -d`</small>
 
 Specifies how long until the created certificate expires. The following example will set the certificate to last `1095` days, or 3 years.
 
@@ -516,7 +572,7 @@ generate --new --name "My certificate" --days 1095 --password "YourExistingPassw
 
 ### Comment
 
-<small>`--comment, -t</small>
+<small>`--comment, -t`</small>
 
 Defines a comment to be added to RSA keys generated. If a comment is not specified, comment will default to `OCG 1.x.x`; which stands for **OpenSSL Certificate Generator**.
 
@@ -538,7 +594,7 @@ We provide you with two different commands:
 
 #### Clean
 
-<small>`--clean, -c</small>
+<small>`--clean, -c`</small>
 
 The clean command will destroy all files except for the following:
 
@@ -558,7 +614,7 @@ generate --clean
 
 #### Wipe
 
-<small>`--wipe, -w</small>
+<small>`--wipe, -w`</small>
 
 The wipe command will destroy all files except for the following:
 
@@ -574,7 +630,7 @@ generate --wipe
 
 #### Variables
 
-<small>`--vars, -v</small>
+<small>`--vars, -v`</small>
 
 The variables command outputs a list of stored variables and their values. Mainly this is used for development purposes only.
 

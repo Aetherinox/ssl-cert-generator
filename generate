@@ -1,5 +1,7 @@
 # #
 #   OpenSSL Certificate Generator
+#
+#   Tested with OpenSSL 3.0.13
 #   
 #   This is a utility which allows you to generate multiple types of certificates on your Linux system:
 #   
@@ -81,9 +83,9 @@
 #       Use any of the following:
 #   
 #       generate --new --pass "abc"
-#       generate --new --pass "abc" --keytype "ecc" || "rsa"
-#       generate --new --pass "abc" --keytype "ecc" --base "/path/to/cert/folder/out"
-#       generate --new --pass "abc" --keytype "ecc" --base "/path/to/cert/folder/out" --domain "domain.com"
+#       generate --new --pass "abc" --algorithm "ecc" || "rsa"
+#       generate --new --pass "abc" --algorithm "ecc" --base "/path/to/cert/folder/out"
+#       generate --new --pass "abc" --algorithm "ecc" --base "/path/to/cert/folder/out" --domain "domain.com"
 #       generate --vars
 #       generate --wipe
 #       generate --clean
@@ -330,9 +332,10 @@ PWD_STR=""
 # #
 
 PARAM_FRIENDLY="CompanyName"
-PARAM_TYPE="rsa"
+PARAM_ALGORITHM="rsa"
 PARAM_DAYS=36500
 PARAM_BITS=4096
+PARAM_CURVE=secp384r1
 PARAM_COMMENT="${APP_TITLE} $(get_version)"
 BOOL_DEV_ENABLED="false"
 BOOL_NEW_KEYS="false"
@@ -402,26 +405,26 @@ readStatus()
     echo -e "  ${BLUE} 🎗️ SSL Config ${END}"
     echo -e " ${GREY1}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${EXT_CNF}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CNF}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CNF}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CNF}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CNF}${END}" "❌${END}"
     fi
 
     if ( set +f; ls ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT} ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}" "❌${END}"
     fi
 
     if ( set +f; ls ${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER} ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL} ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}${END}" "❌${END}"
     fi
 
 
@@ -429,165 +432,165 @@ readStatus()
     echo -e "  ${BLUE} 🎗️ ${FILE_ROOTCA_BASE} ${END}"
     echo -e " ${GREY1}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CRT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CRT}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CRT}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CRT}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${EXT_PFX}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_PFX}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_PFX}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_PFX}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_PFX}${END}" "❌${END}"
     fi
 
     echo -e
     echo -e "  ${BLUE} 🎗️ ${FILE_DOMAIN_BASE} ${END}"
     echo -e " ${GREY1}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${EXT_CSR}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CSR}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CSR}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CSR}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CSR}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CRT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CRT}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CRT}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CRT}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}* ) 1> /dev/null 2>&1; then
-            thumbprint=$(ssh-keygen -lf "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}")
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${END}" "✔️${END}"
-            printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
+        thumbprint=$(ssh-keygen -lf "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}")
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${END}" "❌${END}"
     fi
-    if [ -n "$PWD_RAW" ]; then
+    if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
         if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}* ) 1> /dev/null 2>&1; then
-                printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}" "✔️${END}"
+            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}" "✔️${END}"
         else
-                printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}" "❌${END}"
+            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}" "❌${END}"
         fi
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "⚠️ ‎ Skipped${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}* ) 1> /dev/null 2>&1; then
-            thumbprint=$(ssh-keygen -lf "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}")
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "✔️${END}"
-            printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
+        thumbprint=$(ssh-keygen -lf "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}")
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}" "❌${END}"
     fi
 
     echo -e
     echo -e "  ${BLUE} 🎗️ ${FILE_MASTER_BASE} ${END}"
     echo -e " ${GREY1}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
     if ( set +f; ls ${PATH_MASTER_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.*${EXT_CSR}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CSR}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CSR}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CSR}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CSR}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CRT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CRT}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CRT}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${EXT_CRT}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_UNC}* ) 1> /dev/null 2>&1; then
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_UNC}${END}" "✔️${END}"
@@ -595,62 +598,62 @@ readStatus()
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_CERT_MAIN_UNC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}* ) 1> /dev/null 2>&1; then
-            thumbprint=$(ssh-keygen -lf "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}")
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}${END}" "✔️${END}"
-            printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
+        thumbprint=$(ssh-keygen -lf "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}")
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}${END}" "❌${END}"
     fi
-    if [ -n "$PWD_RAW" ]; then
+    if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
         if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}* ) 1> /dev/null 2>&1; then
-                printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${END}" "✔️${END}"
+            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${END}" "✔️${END}"
         else
-                printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${END}" "❌${END}"
+            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${END}" "❌${END}"
         fi
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "⚠️ ‎ Skipped${END}"
     fi
     if ( set +f; ls ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}* ) 1> /dev/null 2>&1; then
-            thumbprint=$(ssh-keygen -lf "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}")
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "✔️${END}"
-            printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
+        thumbprint=$(ssh-keygen -lf "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}")
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ ${thumbprint}${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}${END}" "❌${END}"
     fi
     if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}* ) 1> /dev/null 2>&1; then
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}${END}" "✔️${END}"
     else
-            printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}${END}" "❌${END}"
     fi
 
     echo -e
@@ -674,7 +677,7 @@ opt_usage()
     echo -e
     printf '  %-5s %-40s\n' "${GREEN}Usage:${END}" "" 1>&2
     printf '  %-5s %-40s\n' "    " "${0} [ ${GREY3}options${END} ]" 1>&2
-    printf '  %-5s %-40s\n\n' "    " "${0} [ ${GREY3}--new --keytype "rsa" --name \"CompanyName\"${END} ] [ ${GREY3}--pass \"YOUR_PASSWD\"${END} ] [ ${GREY3}--version${END} ] [ ${GREY3}--help${END} ]" 1>&2
+    printf '  %-5s %-40s\n\n' "    " "${0} [ ${GREY3}--new --algorithm "rsa" --name \"CompanyName\"${END} ] [ ${GREY3}--pass \"YOUR_PASSWD\"${END} ] [ ${GREY3}--version${END} ] [ ${GREY3}--help${END} ]" 1>&2
     printf '  %-5s %-40s\n' "${GREEN}Structure:${END}" "" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3} 📁 ${FOLDER_CERTS}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${BLUE}    📁 ${FOLDER_ROOTCA}${END}" 1>&2
@@ -703,17 +706,27 @@ opt_usage()
     printf '  %-5s %-40s\n' "" "" 1>&2
     printf '  %-5s %-40s\n' "${GREEN}Options:${WHITE}" "" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-n,  --new" "Generate new keys" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREY2}requires that the utility folders be clean. any existing private keys will block${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREY2}this command from generating new keys. delete any private key files ending with${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREY2}.pem or .key${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}requires that the utility folders be clean. any existing private keys will block${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}this command from generating new keys. delete any private key files ending with${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}.pem or .key${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-i,  --import" "Import existing RSA or ECC private key${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREY2}allows you to import an existing private key from another directory.${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREY2}must specify a private key with an intact header. the following are acceptable:${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREEN}   - ${HEADER_RSA_PRIV_ENC}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREEN}   - ${HEADER_RSA_PRIV_UNC}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREEN}   - ${HEADER_ECC_PRIV_UNC}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-K,  --keytype" "Type of key to generate${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "" "    ${GREY2}options:${END} ec, rsa${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}allows you to import an existing private key from another directory.${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}must specify a private key with an intact header. the following are acceptable:${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ${HEADER_RSA_PRIV_ENC}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ${HEADER_RSA_PRIV_UNC}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ${HEADER_ECC_PRIV_UNC}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-a,  --algorithm" "Type of key to generate${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ecc${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - rsa${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-V,  --curve" "ECC curve${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}accepts any curves included with OpenSSL${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - secp384r1${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - secp521r1${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - sect571k1${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - c2pnb368w1${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - c2tnb431r1${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - prime256v1${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-b,  --bits" "Bits to use${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-N,  --friendlyname" "Friendly name to use for certificate${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-P,  --pass" "Password to use for certs and keys${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-I,  --passin" "Password in${END}" 1>&2
@@ -749,21 +762,6 @@ while [ $# -gt 0 ]; do
     -P|--passwd|--pass|--password)
             if [[ "$1" != *=* ]]; then shift; fi
             PWD_RAW="${1#*=}"
-            # if [ -z "${PWD_RAW}" ]; then
-            #    echo -e "  ${END}Must specify a password"
-            #    echo -e "      ${BOLD}${GREY2}./${APP_THIS} --pass password${END}"
-            #    echo -e
-            #
-            #    exit 1
-            # fi
-
-            # if (( ${#PWD_RAW} < 5 )) ; then
-            #    echo -e "  ${END}OpenSSH passphrase must be at least ${BLUE}five (5)${END} characters"
-            #    echo -e
-            #
-            #    exit 1
-            # fi
-
             PWD_STR=${PWD_RAW//?/*}
             ;;
 
@@ -816,8 +814,8 @@ while [ $# -gt 0 ]; do
             PARAM_FRIENDLY="${1#*=}"
             if [ -z "${PARAM_FRIENDLY}" ]; then
                 echo -e "  ${END}Must specify a valid friendly name for the certificate${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --friendlyname "Certificate Name"${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} -n "Certificate Name"${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} --friendlyname "Certificate Name"${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} -n "Certificate Name"${END}"
                 echo -e
 
                 exit 1
@@ -836,17 +834,35 @@ while [ $# -gt 0 ]; do
             PARAM_IMPORT_PATH="${1#*=}"
             ;;
 
-    -K|--kt|--keytype)
+    -a|--algo|--algorithm)
             if [[ "$1" != *=* ]]; then shift; fi
-            PARAM_TYPE="${1#*=}"
-            if [ -z "${PARAM_TYPE}" ]; then
-                echo -e "  ${END}Must specify a key type: ${GREY2}ec, rsa${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --keytype rsa${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --keytype ec${END}"
+            PARAM_ALGORITHM="${1#*=}"
+            if [ -z "${PARAM_ALGORITHM}" ]; then
+                echo -e "  ${END}Must specify a key algorithm: ${GREY2}ecc, rsa${END}"
+                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --algorithm rsa${END}"
+                echo -e "      ${BOLD}${GREY2}./${APP_THIS} -a ecc${END}"
                 echo -e
 
                 exit 1
             fi
+            ;;
+
+    -V|--curve)
+            if [[ "$1" != *=* ]]; then shift; fi
+            PARAM_CURVE="${1#*=}"
+            if [ -z "${PARAM_CURVE}" ]; then
+                echo -e "  ${END}Must specify a curve when selecting ECDSA / ECC algorithm"
+                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --curve ${PARAM_CURVE}${END}"
+                echo -e "      ${BOLD}${GREY2}./${APP_THIS} -V secp521r1${END}"
+                echo -e
+
+                exit 1
+            fi
+            ;;
+
+    -b|--bit|--bits)
+            if [[ "$1" != *=* ]]; then shift; fi
+            PARAM_BITS="${1#*=}"
             ;;
 
     -I|--passin)
@@ -906,7 +922,7 @@ while [ $# -gt 0 ]; do
             # #
             #   clean removes all files except for private keys used to generate original files
             #
-            #   @usage          generate --wipe
+            #   @usage          generate --clean
             # #
 
             find ${PATH_CERTS} \
@@ -1139,7 +1155,7 @@ if [[ ${_PASS_IMPORT} == "true" ]]; then
     # #
 
     if openssl rsa -noout -in "$PARAM_IMPORT_PATH" -passin "pass:$PWD_RAW" 2>/dev/null; then
-            printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Import-006${END}" "${GREY3}Status${END}" "${RED}›${END}" "${BLUE2}Correct password supplied for imported key${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Import-006${END}" "${GREY3}Status${END}" "${RED}›${END}" "${BLUE2}Correct password supplied for imported key${END}"
     else
         echo
         echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}Password Restriction${END}"
@@ -1173,35 +1189,35 @@ if [ ! -d "${PATH_ROOTCA}/${FOLDER_ROOT_SUB_GEN}" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-002${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${BLUE2}Created ${GREY3}${PATH_ROOTCA}/${FOLDER_ROOT_SUB_GEN}/${END}"
     mkdir -p ${PATH_ROOTCA}/${FOLDER_ROOT_SUB_GEN}
 else
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-003${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA}/${FOLDER_ROOT_SUB_GEN}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-002${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA}/${FOLDER_ROOT_SUB_GEN}/${END}"
 fi
 
 if [ ! -d "${PATH_ROOTCA_SUB_CERTS}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-004${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${BLUE2}Created ${GREY3}${PATH_ROOTCA_SUB_CERTS}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-003${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${BLUE2}Created ${GREY3}${PATH_ROOTCA_SUB_CERTS}/${END}"
     mkdir -p ${PATH_ROOTCA_SUB_CERTS}
 else
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-005${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA_SUB_CERTS}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-003${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA_SUB_CERTS}/${END}"
 fi
 
 if [ ! -d "${PATH_ROOTCA_SUB_CRL}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-006${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${YELLOW3}Created ${GREY3}${PATH_ROOTCA_SUB_CRL}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-004${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${YELLOW3}Created ${GREY3}${PATH_ROOTCA_SUB_CRL}/${END}"
     mkdir -p ${PATH_ROOTCA_SUB_CRL}
 else
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-007${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA_SUB_CRL}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-004${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA_SUB_CRL}/${END}"
 fi
 
 if [ ! -d "${PATH_DOMAIN}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-008${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${YELLOW3}Created ${GREY3}${PATH_DOMAIN}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-005${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${YELLOW3}Created ${GREY3}${PATH_DOMAIN}/${END}"
     mkdir -p ${PATH_DOMAIN}
 else
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-009${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_DOMAIN}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-005${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_DOMAIN}/${END}"
 fi
 
 if [ ! -d "${PATH_MASTER}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-010${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${YELLOW3}Created ${GREY3}${PATH_MASTER}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-006${END}" "${GREY3}${LNG_STEP_FOLDER_CREATE}${END}" "${RED}›${END}" "${YELLOW3}Created ${GREY3}${PATH_MASTER}/${END}"
     mkdir -p ${PATH_MASTER}
 else
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-011${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_MASTER}/${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-006${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_MASTER}/${END}"
 fi
 
 # #
@@ -1214,7 +1230,7 @@ fi
 
 if [ -z "${BOOL_NEW_KEYS}" ] || [ "${BOOL_NEW_KEYS}" == "false" ]; then
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-012${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}private key${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-007${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}private key${END}"
     else
         echo -e
         echo -e " ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
@@ -1235,7 +1251,7 @@ if [ -z "${BOOL_NEW_KEYS}" ] || [ "${BOOL_NEW_KEYS}" == "false" ]; then
     fi
 
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-013${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}private key${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-008${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}private key${END}"
     else
         echo -e
         echo -e " ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
@@ -1261,7 +1277,7 @@ fi
 # #
 
 if [ ! -f "${PATH_ROOTCA_BASE}.${EXT_CNF}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-014${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${RED}Missing ${GREY3}${PATH_ROOTCA_BASE}.${EXT_CNF}${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-009${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${RED}Missing ${GREY3}${PATH_ROOTCA_BASE}.${EXT_CNF}${END}"
 
     echo -e
     echo -e " ${BLUE}---------------------------------------------------------------------------------------------------${END}"
@@ -1277,7 +1293,7 @@ if [ ! -f "${PATH_ROOTCA_BASE}.${EXT_CNF}" ]; then
     exit 1
 
 else
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-015${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA_BASE}.${EXT_CNF}${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-009${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA_BASE}.${EXT_CNF}${END}"
 fi
 
 # #
@@ -1307,8 +1323,8 @@ fi
 #   rootCA > Clean > certs.db
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-001${END}" "${GREY3}${LNG_STEP_CERTS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-001${END}" "${GREY3}${LNG_STEP_CERTS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}${END}"
 > "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}"
 else
     touch "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}"
@@ -1319,8 +1335,8 @@ fi
 #   rootCA > Setup > certs.db.attr
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-002${END}" "${GREY3}${LNG_STEP_ATTRIBS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.attr${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-002${END}" "${GREY3}${LNG_STEP_ATTRIBS}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.attr${END}"
 > "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}"
 else
     touch "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}"
@@ -1332,8 +1348,8 @@ echo "unique_subject = yes" > "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT
 #   rootCA > Reset > crlnumber
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-003${END}" "${GREY3}${LNG_STEP_CRL_RESET} 00${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-003${END}" "${GREY3}${LNG_STEP_CRL_RESET} 00${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}${END}"
     echo "00" > "${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}"
 else
     touch "${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}"
@@ -1347,66 +1363,67 @@ fi
 #       will error out.
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-004${END}" "${GREY3}${LNG_STEP_SERIAL_RESET} 00${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-004${END}" "${GREY3}${LNG_STEP_SERIAL_RESET} 00${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}${END}"
-    echo "0000" > "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}"
+    echo "00" > "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}"
 else
     touch "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}"
-    echo "0000" > "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}"
+    echo "00" > "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}"
 fi
 
 # #
 #   rootCA > Delete > crlnumber.old
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}" ]; then
     rm "${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}${END}"
 fi
 
 # #
 #   rootCA > Delete > certs.db.attr.old
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}" ]; then
     rm "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}.${EXT_OLD}${END}"
 fi
 
 # #
 #   rootCA > Delete > certs.db.old
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}" ]; then
     rm "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}"
 fi
 
 # #
 #   rootCA > Delete > serial.old
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}.${EXT_OLD}${END}"
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}.${EXT_OLD}" ]; then
     rm "${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}.${EXT_OLD}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_DELETE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA}/${FILE_ROOTCA_SERIAL}.${EXT_OLD}${END}"
 fi
 
 # #
 #   rootCA > Create > RSA           rootCA.key.main-01.enc.priv.pem
 # #
 
-if [ "${PARAM_TYPE}" == "rsa" ]; then
+if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-009${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREEN} ⚠️ ‎ ‎  Skipped generating ${YELLOW}${FILE_ROOTCA_BASE}${WHITE} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_ROOTCA_BASE}${BLUE2} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
     else
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-009${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}"
-        openssl genrsa -aes256 -passout pass:"${PWD_OUT}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" ${PARAM_BITS}
+        # openssl genrsa -aes256 -passout "pass:${PWD_OUT}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" ${PARAM_BITS}
+        openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -pass "pass:${PWD_RAW}"
 
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREY2} ↳  openssl genrsa -aes256 -passout pass:\"${PWD_OUT}\" -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" ${PARAM_BITS}${END}
+            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -pass \"pass:${PWD_RAW}\"
             echo -e
         fi
     fi
@@ -1416,43 +1433,72 @@ fi
 #   rootCA > Create > RSA           rootCA.key.main-01.unc.priv.pem
 # #
 
-if [ "${PARAM_TYPE}" == "rsa" ]; then
+if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}"
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREEN} ⚠️ ‎ ‎  Skipped generating ${YELLOW}${FILE_ROOTCA_BASE}${WHITE} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${BLUE2}, key already exists from previous generation${END}
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_ROOTCA_BASE}${BLUE2} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
     else
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}"
-        openssl rsa -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -passin pass:"${PWD_IN}" -passout pass:"${PWD_OUT}"
+        openssl rsa -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
+            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\"
             echo -e
         fi
     fi
 fi
 
 # #
-#   rootCA > Create > EC            rootCA.key.main-01.enc.priv.pem
+#   rootCA > Create > ECC           rootCA.key.main-01.enc.priv.pem
 #                                   rootCA.key.main-01.unc.priv.pem
 # #
 
-if [ "${PARAM_TYPE}" == "ec" ] || [ "${PARAM_TYPE}" == "ecc" ] || [ "${PARAM_TYPE}" == "ecdsa" ]; then
+if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-011${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}"
+    # file already exists
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo -e
-            echo ‎ ‎${GREEN} ⚠️ ‎ ‎  Skipped generating ${YELLOW}${FILE_ROOTCA_BASE}${WHITE} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_ROOTCA_BASE}${BLUE2} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
     else
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-011${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}"
-        openssl ecparam -genkey -name secp384r1 -noout -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -pass pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}" -passin pass:"${PWD_IN}"
-        openssl ec -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -pass pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}" -passin pass:"${PWD_IN}"
+        openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}"
+
+        if [ -z "${PWD_IN}" ]; then
+            echo
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo -e
+            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passin Not Provided${END}"
+            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passin "PASSWORD"${WHITE}${END}"
+            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+            echo -e
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo
+
+            exit 1
+        fi
+
+        if [ -z "${PWD_OUT}" ]; then
+            echo
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo -e
+            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passout Not Provided${END}"
+            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passout "PASSWORD"${WHITE}${END}"
+            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+            echo -e
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo
+
+            exit 1
+        fi
+
+        openssl ec -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
 
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name secp384r1 -noout -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -pass pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
-            echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -pass pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
+            echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
+            echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
             echo -e
         fi
     fi
@@ -1463,10 +1509,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${EXT_CRT}${END}"
-openssl req -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -key "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out "${PATH_ROOTCA_BASE}.${EXT_CRT}" -passout pass:"${PWD_OUT}" -passin pass:"${PWD_IN}" --batch
+openssl req -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -key "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out "${PATH_ROOTCA_BASE}.${EXT_CRT}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -key \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${EXTENSION_ROOT} -extensions ${EXTENSION_ROOT} -out \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch${END}
+    echo ‎ ‎${GREY2} ↳  openssl req -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -key \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch${END}
     echo -e
 fi
 
@@ -1479,7 +1525,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${EXT_PFX}${END}"
-openssl pkcs12 -export -name "${PARAM_FRIENDLY} Certificate Authority" -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -inkey "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_ROOTCA_BASE}.${EXT_PFX}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}"
+openssl pkcs12 -export -name "${PARAM_FRIENDLY} Certificate Authority" -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -inkey "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_ROOTCA_BASE}.${EXT_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Certificate Authority\" -in \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -inkey \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_ROOTCA_BASE}.${EXT_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
@@ -1491,7 +1537,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}" -passin pass:"${PWD_IN}" -batch
+openssl ca -gencrl -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
@@ -1511,40 +1557,97 @@ if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
 fi
 
 # #
-#   Domain > Create > domain.key.main-01.enc.priv.pem
+#   Domain > Create > RSA           domain.key.main-01.enc.priv.pem
 # #
 
-if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${BLUE2} ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_DOMAIN_BASE}${BLUE2} private key ${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${GREEN}, key already exists from previous generation${END}
-        echo -e
-    fi
-else
+if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-001${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}"
-    openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -pass pass:"${PWD_RAW}"
+    if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_DOMAIN_BASE}${BLUE2} private key ${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${GREEN}, key already exists from previous generation${END}
+            echo -e
+        fi
+    else
+        openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -pass "pass:${PWD_RAW}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -pass pass:\"${PWD_RAW}\"
-        echo -e
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -pass \"pass:${PWD_RAW}\"
+            echo -e
+        fi
     fi
 fi
 
 # #
-#   Domain > Create > domain.key.main-01.unc.priv.pem
+#   Domain > Create > RSA           domain.key.main-01.unc.priv.pem
 # #
 
-if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREEN} ⚠️ ‎ ‎  Skipped generating ${YELLOW}${FILE_DOMAIN_BASE}${WHITE} private key ${YELLOW}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${GREEN}, key already exists from previous generation${END}
-        echo -e
-    fi
-else
+if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-002${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${END}"
-    openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}" -passin pass:"${PWD_IN}" -passout pass:"${PWD_OUT}"
+    if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_DOMAIN_BASE}${BLUE2} private key ${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${GREEN}, key already exists from previous generation${END}
+            echo -e
+        fi
+    else
+        openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
-        echo -e
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}\"
+            echo -e
+        fi
+    fi
+fi
+
+# #
+#   Domain > Create > ECC           domain.key.main-01.enc.priv.pem
+# #
+
+if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-001${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}"
+    # file already exists
+    if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_DOMAIN_BASE}${BLUE2} private key ${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
+            echo -e
+        fi
+    else
+        openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}"
+
+        if [ -z "${PWD_IN}" ]; then
+            echo
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo -e
+            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passin Not Provided${END}"
+            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passin "PASSWORD"${WHITE}${END}"
+            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+            echo -e
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo
+
+            exit 1
+        fi
+
+        if [ -z "${PWD_OUT}" ]; then
+            echo
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo -e
+            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passout Not Provided${END}"
+            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passout "PASSWORD"${WHITE}${END}"
+            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+            echo -e
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo
+
+            exit 1
+        fi
+
+        openssl ec -in "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
+
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
+            echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
+            echo -e
+        fi
     fi
 fi
 
@@ -1553,7 +1656,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -section ${SECTION_DOMAIN} -out "${PATH_DOMAIN_BASE}.${EXT_CSR}" -passout pass:"${PWD_OUT}" -passin pass:"${PWD_IN}" --batch
+openssl req -sha512 -new -key "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -section ${SECTION_DOMAIN} -out "${PATH_DOMAIN_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -section ${SECTION_DOMAIN} -out \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
@@ -1571,7 +1674,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_DOMAIN_BASE}.${EXT_CSR}" -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin pass:"${PWD_IN}" -batch
+openssl ca -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_DOMAIN_BASE}.${EXT_CSR}" -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
@@ -1587,7 +1690,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}"
-openssl pkcs12 -export -name "${PARAM_FRIENDLY} Domain Authority" -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -inkey "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}"
+openssl pkcs12 -export -name "${PARAM_FRIENDLY} Domain Authority" -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -inkey "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Domain Authority\" -in \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -inkey \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
@@ -1599,7 +1702,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CRT}${END}"
-openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -1610,15 +1713,13 @@ fi
 #   Domain > Remove > domain.keystore.base64.pfx
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_REMOVE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}"
 if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}" ]; then
     rm "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}"
 
     if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  rm \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}\"
-        echo -e
     fi
-
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_REMOVE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}"
 fi
 
 # #
@@ -1636,7 +1737,7 @@ cat "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_DOMAIN_BASE}.${
 
 # #
 #   printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Domain${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_P12}${END}"
-#   openssl pkcs12 -export -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -inkey "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_P12}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+#   openssl pkcs12 -export -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -inkey "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_P12}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 # 
 #   if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
 #       echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -in \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -inkey \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_P12}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -1649,7 +1750,7 @@ cat "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_DOMAIN_BASE}.${
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-009${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}${END}"
-openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -aes-256-cbc -out "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -aes-256-cbc -out "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -aes-256-cbc -out \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -1661,7 +1762,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}${END}"
-openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nodes -out "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}"
+openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nodes -out "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -nodes -out \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
@@ -1673,7 +1774,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-011${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}${END}"
-openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -1685,7 +1786,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}"
-openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -nodes -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -nodes -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -nodes -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -1696,8 +1797,8 @@ fi
 #   Domain > Create > domain.key.rsa.priv.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}"
-openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" -outform PEM -traditional -passin pass:"${PWD_IN}" -passout pass:"${PWD_OUT}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}"
+openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" -outform PEM -traditional -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" -outform PEM -traditional -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
@@ -1708,8 +1809,8 @@ fi
 #   Domain > Create > domain.key.rsa.pub.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-015${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}"
-openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}" -passin pass:"${PWD_IN}" -passout pass:"${PWD_OUT}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}"
+openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
@@ -1723,28 +1824,33 @@ fi
 #   password must be at least five characters
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-015${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}"
 if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-017${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}"
-    cp "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
-    ssh-keygen -p -m PEM -P "${PWD_RAW}" -N "${PWD_RAW}" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
+    if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
+        cp "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
+        ssh-keygen -p -m PEM -P "${PWD_RAW}" -N "${PWD_RAW}" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
 
-    if [ -n "$PARAM_COMMENT" ]; then
-        ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
-    fi
-
-    chmod 600 "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
-
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
-        echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
         if [ -n "$PARAM_COMMENT" ]; then
-            echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
+            ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
         fi
-        echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
+
+        chmod 600 "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
+
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
+            echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
+            if [ -n "$PARAM_COMMENT" ]; then
+                echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
+            fi
+            echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
+            echo -e
+        fi
+    else
+        echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped copying OpenSSL file ${YELLOW3}${FILE_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${RED2} to ${BLUE2}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}
         echo -e
     fi
 else
-    echo ‎ ‎${GREEN} ⚠️ ‎ ‎  Skipped generating OpenSSL private key ${YELLOW}${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${WHITE}, no ${GREEN}-password${WHITE} provided${END}
+    echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped generating OpenSSL file ${YELLOW3}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${RED2}, no ${BLUE}--password${RED2} provided${END}
     echo -e
 fi
 
@@ -1753,23 +1859,28 @@ fi
 #   also known as id_rsa
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}"
-cp ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV} ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}
-ssh-keygen -p -m PEM -N "" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-016${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}"
+if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
+    cp "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
+    ssh-keygen -p -m PEM -N "" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
 
-if [ -n "$PARAM_COMMENT" ]; then
-    ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
-fi
-
-chmod 600 "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
-
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
-    echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
     if [ -n "$PARAM_COMMENT" ]; then
-        echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
     fi
-    echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+
+    chmod 600 "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
+
+    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        echo ‎ ‎${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        if [ -n "$PARAM_COMMENT" ]; then
+            echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        fi
+        echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        echo -e
+    fi
+else
+    echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped generating OpenSSL file ${YELLOW3}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${RED2} 📄  requires ${BLUE2}${FILE_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}
     echo -e
 fi
 
@@ -1782,11 +1893,17 @@ fi
 #   -f      filename - Specifies the filename of the key file. 
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-016${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${END}"
-ssh-keygen -P "${PWD_RAW}" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-017${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${END}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}\"
+if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
+    ssh-keygen -P "${PWD_RAW}" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}"
+
+    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        echo ‎ ‎${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}\"
+        echo -e
+    fi
+else
+    echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped generating OpenSSL file ${YELLOW3}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${RED2} 📄  requires ${BLUE2}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}
     echo -e
 fi
 
@@ -1794,8 +1911,8 @@ fi
 #   Domain > Create > crl/domain.crl.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}" -passin pass:"${PWD_IN}" -batch
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}"
+openssl ca -gencrl -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
@@ -1806,7 +1923,7 @@ fi
 #   Domain > Create > crl/domain.crl
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-020${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}"
 openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
@@ -1818,7 +1935,7 @@ fi
 #   Domain > domain.Fullchain.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-018${END}" "${GREY3}${LNG_STEP_CHAIN_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN}/${SSL_CERT_FULLCHAIN}${END}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-020${END}" "${GREY3}${LNG_STEP_CHAIN_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN}/${SSL_CERT_FULLCHAIN}${END}"
 > "${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}"
 cat "${PATH_DOMAIN_BASE}.${EXT_CRT}" >> "${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}"
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}"
@@ -1830,40 +1947,97 @@ if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
 fi
 
 # #
-#   Naster > Create > 9a.key.main-01.enc.priv.pem
+#   Naster > Create > RSA           9a.key.main-01.enc.priv.pem
 # #
 
-if ( set +f; ls ${PATH_MASTER_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREEN} ⚠️ ‎ ‎  Skipped generating ${YELLOW}${FILE_MASTER_BASE}${WHITE} private key ${YELLOW}${FILE_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${GREEN}, key already exists from previous generation${END}
-        echo -e
-    fi
-else
+if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-001${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${END}"
-    openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -pass pass:"${PWD_RAW}"
+    if ( set +f; ls ${PATH_MASTER_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_MASTER_BASE}${BLUE2} private key ${YELLOW3}${FILE_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${GREEN}, key already exists from previous generation${END}
+            echo -e
+        fi
+    else
+        openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -pass "pass:${PWD_RAW}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}\" -pass pass:\"${PWD_RAW}\"
-        echo -e
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}\" -pass \"pass:${PWD_RAW}\"
+            echo -e
+        fi
     fi
 fi
 
 # #
-#   Naster > Create > 9a.key.main-01.unc.priv.pem
+#   Naster > Create > RSA           9a.key.main-01.unc.priv.pem
 # #
 
-if ( set +f; ls ${PATH_MASTER_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREEN} ⚠️ ‎ ‎  Skipped generating ${YELLOW}${FILE_MASTER_BASE}${WHITE} private key ${YELLOW}${FILE_MASTER_BASE}.${SSL_KEY_MAIN_UNC}${GREEN}, key already exists from previous generation${END}
-        echo -e
-    fi
-else
+if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-002${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}${END}"
-    openssl rsa -in "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}" -passin pass:"${PWD_IN}" -passout pass:"${PWD_OUT}"
+    if ( set +f; ls ${PATH_MASTER_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_MASTER_BASE}${BLUE2} private key ${YELLOW3}${FILE_MASTER_BASE}.${SSL_KEY_MAIN_UNC}${GREEN}, key already exists from previous generation${END}
+            echo -e
+        fi
+    else
+        openssl rsa -in "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
-        echo -e
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}\"
+            echo -e
+        fi
+    fi
+fi
+
+# #
+#   Master > Create > ECC           domain.key.main-01.enc.priv.pem
+# #
+
+if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-001${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${END}"
+    # file already exists
+    if ( set +f; ls ${PATH_MASTER_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_MASTER_BASE}${BLUE2} private key ${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
+            echo -e
+        fi
+    else
+        openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}"
+
+        if [ -z "${PWD_IN}" ]; then
+            echo
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo -e
+            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passin Not Provided${END}"
+            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passin "PASSWORD"${WHITE}${END}"
+            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+            echo -e
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo
+
+            exit 1
+        fi
+
+        if [ -z "${PWD_OUT}" ]; then
+            echo
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo -e
+            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passout Not Provided${END}"
+            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passout "PASSWORD"${WHITE}${END}"
+            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+            echo -e
+            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+            echo
+
+            exit 1
+        fi
+
+        openssl ec -in "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
+
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
+            echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
+            echo -e
+        fi
     fi
 fi
 
@@ -1872,7 +2046,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -section ${SECTION_MASTER} -out "${PATH_MASTER_BASE}.${EXT_CSR}" -passout pass:"${PWD_OUT}" -passin pass:"${PWD_IN}" --batch
+openssl req -sha512 -new -key "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -section ${SECTION_MASTER} -out "${PATH_MASTER_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -section ${SECTION_MASTER} -out \"${PATH_MASTER_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
@@ -1890,7 +2064,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_MASTER} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_MASTER_BASE}.${EXT_CSR}" -out "${PATH_MASTER_BASE}.${EXT_CRT}" -passin pass:"${PWD_IN}" -batch
+openssl ca -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_MASTER} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_MASTER_BASE}.${EXT_CSR}" -out "${PATH_MASTER_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_MASTER} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_MASTER_BASE}.${EXT_CSR}\" -out \"${PATH_MASTER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
@@ -1906,7 +2080,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}${END}"
-openssl pkcs12 -export -name "${PARAM_FRIENDLY} Authentication Authority" -in "${PATH_MASTER_BASE}.${EXT_CRT}" -inkey "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}"
+openssl pkcs12 -export -name "${PARAM_FRIENDLY} Authentication Authority" -in "${PATH_MASTER_BASE}.${EXT_CRT}" -inkey "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Authentication Authority\" -in \"${PATH_MASTER_BASE}.${EXT_CRT}\" -inkey \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
@@ -1918,26 +2092,23 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${EXT_CRT}${END}"
-openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out "${PATH_MASTER_BASE}.${EXT_CRT}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out "${PATH_MASTER_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_MASTER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
-    echo -e
 fi
 
 # #
 #   Naster > Remove > 9a.keystore.base64.pfx
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_REMOVE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}${END}"
 if [ -f "${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}" ]; then
     rm "${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}"
 
     if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  rm \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}\"
-        echo -e
     fi
-
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_REMOVE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEYSTORE_B64}${END}"
 fi
 
 # #
@@ -1955,7 +2126,7 @@ cat "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_MASTER_BASE}.${
 
 # #
 #   printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Domain${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEYSTORE_P12}${END}"
-#   openssl pkcs12 -export -in "${PATH_MASTER_BASE}.${EXT_CRT}" -inkey "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_MASTER_BASE}.${SSL_KEYSTORE_P12}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+#   openssl pkcs12 -export -in "${PATH_MASTER_BASE}.${EXT_CRT}" -inkey "${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_MASTER_BASE}.${SSL_KEYSTORE_P12}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 # 
 #   if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
 #       echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -in \"${PATH_MASTER_BASE}.${EXT_CRT}\" -inkey \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_P12}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -1968,7 +2139,7 @@ cat "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_MASTER_BASE}.${
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-009${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}${END}"
-openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -aes-256-cbc -out "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -aes-256-cbc -out "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}\" -aes-256-cbc -out \"${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -1980,7 +2151,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_CERT_MAIN_UNC}${END}"
-openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -nodes -out "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_UNC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}"
+openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -nodes -out "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}\" -nodes -out \"${PATH_MASTER_BASE}.${SSL_CERT_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
@@ -1992,7 +2163,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-011${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}${END}"
-openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -2004,7 +2175,7 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}${END}"
-openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -nodes -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}" -passin pass:"${PWD_IN}" -password pass:"${PWD_RAW}" -passout pass:"${PWD_OUT}"
+openssl pkcs12 -in "${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -nodes -out "${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -nodes -out \"${PATH_MASTER_BASE}.${SSL_KEY_MAIN02_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
@@ -2015,8 +2186,8 @@ fi
 #   Naster > Create > 9a.key.rsa.priv.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${END}"
-openssl rsa -in "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}" -out "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}" -outform PEM -traditional -passin pass:"${PWD_IN}" -passout pass:"${PWD_OUT}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${END}"
+openssl rsa -in "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}" -out "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}" -outform PEM -traditional -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}\" -out \"${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}\" -outform PEM -traditional -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
@@ -2027,11 +2198,11 @@ fi
 #   Naster > Create > 9a.key.rsa.pub.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-015${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}${END}"
-openssl rsa -in "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}" -passin pass:"${PWD_IN}" -passout pass:"${PWD_OUT}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}${END}"
+openssl rsa -in "${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:"${PWD_IN}" -passout pass:\"${PWD_OUT}\"
+    echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_MASTER_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_MASTER_BASE}.${SSL_KEY_RSA_PUB}\" -passin "pass:${PWD_IN}" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
@@ -2042,28 +2213,33 @@ fi
 #   password must be at least five characters
 # #
 
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-015${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${END}"
 if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${END}"
-    cp "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
-    ssh-keygen -p -m PEM -P "${PWD_RAW}" -N "${PWD_RAW}" -f "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
+    if [ -f "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
+        cp "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
+        ssh-keygen -p -m PEM -P "${PWD_RAW}" -N "${PWD_RAW}" -f "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
 
-    if [ -n "$PARAM_COMMENT" ]; then
-        ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
-    fi
-
-    chmod 600 "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
-
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-        echo ‎ ‎${GREY2} ↳  cp \"${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
-        echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
         if [ -n "$PARAM_COMMENT" ]; then
-            echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
+            ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
         fi
-        echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
+
+        chmod 600 "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}"
+
+        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+            echo ‎ ‎${GREY2} ↳  cp \"${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
+            echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
+            if [ -n "$PARAM_COMMENT" ]; then
+                echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
+            fi
+            echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}\"
+            echo -e
+        fi
+    else
+        echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped copying OpenSSL file ${YELLOW3}${FILE_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${RED2} to ${BLUE2}${FILE_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${END}
         echo -e
     fi
 else
-    echo ‎ ‎${BLUE2} ⚠️ ‎ ‎  Skipped generating OpenSSL private key ${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${WHITE}, no ${GREEN}-password${WHITE} provided${END}
+    echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped generating OpenSSL file ${YELLOW3}${FILE_MASTER_BASE}.${SSL_KEY_SSH_PRIV}${RED2}, no ${BLUE}--password${RED2} provided${END}
     echo -e
 fi
 
@@ -2072,23 +2248,28 @@ fi
 #   also known as id_rsa
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}"
-cp ${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV} ${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}
-ssh-keygen -p -m PEM -N "" -f "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-016${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}"
+if [ -f "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
+    cp "${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
+    ssh-keygen -p -m PEM -N "" -f "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
 
-if [ -n "$PARAM_COMMENT" ]; then
-    ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
-fi
-
-chmod 600 "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
-
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  cp \"${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
-    echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -N \"\" -f \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
     if [ -n "$PARAM_COMMENT" ]; then
-        echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        ssh-keygen -c -C "${PARAM_COMMENT}" -P "${PWD_RAW}" -f  "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
     fi
-    echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+
+    chmod 600 "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
+
+    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        echo ‎ ‎${GREY2} ↳  cp \"${PATH_MASTER_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -N \"\" -f \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        if [ -n "$PARAM_COMMENT" ]; then
+            echo ‎ ‎${GREY2} ↳  ssh-keygen -c -C \"${PARAM_COMMENT}\" -P \"${PWD_RAW}\" -f  \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        fi
+        echo ‎ ‎${GREY2} ↳  chmod 600 \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
+        echo -e
+    fi
+else
+    echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped generating OpenSSL file ${YELLOW3}${FILE_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${RED2} 📄  requires ${BLUE2}${FILE_MASTER_BASE}.${SSL_KEY_RSA_PRIV}${END}
     echo -e
 fi
 
@@ -2101,11 +2282,17 @@ fi
 #   -f      filename - Specifies the filename of the key file. 
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}${END}"
-ssh-keygen -P "${PWD_RAW}" -f "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-017${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}${END}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}\"
+if [ -f "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
+    ssh-keygen -P "${PWD_RAW}" -f "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}"
+
+    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        echo ‎ ‎${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_MASTER_BASE}.${SSL_KEY_SSH_PUB}\"
+        echo -e
+    fi
+else
+    echo ‎ ‎${RED2} ↳ ⚠️ ‎ ‎  Skipped generating OpenSSL file ${YELLOW3}${FILE_MASTER_BASE}.${SSL_KEY_SSH_PUB}${RED2} 📄  requires ${BLUE2}${FILE_MASTER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}
     echo -e
 fi
 
@@ -2113,8 +2300,8 @@ fi
 #   Naster > Create > crl/master.crl.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-016${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}" -passin pass:"${PWD_IN}" -batch
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}${END}"
+openssl ca -gencrl -config "${PATH_ROOTCA_BASE}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA_BASE}.${EXT_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
@@ -2125,7 +2312,7 @@ fi
 #   Naster > Create > crl/master.crl
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-017${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}${END}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}${END}"
 openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_MASTER_BASE}.${EXT_CRL}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
@@ -2137,7 +2324,7 @@ fi
 #   Naster > 9a.Fullchain.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-018${END}" "${GREY3}${LNG_STEP_CHAIN_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER}/${SSL_CERT_FULLCHAIN}${END}"
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-020${END}" "${GREY3}${LNG_STEP_CHAIN_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER}/${SSL_CERT_FULLCHAIN}${END}"
 > "${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}"
 cat "${PATH_MASTER_BASE}.${EXT_CRT}" >> "${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}"
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_MASTER}/${FILE_MASTER_BASE}.${SSL_CERT_FULLCHAIN}"
