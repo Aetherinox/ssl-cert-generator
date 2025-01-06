@@ -2,6 +2,8 @@
 
 - [About](#about)
   - [New Key Generation](#new-key-generation)
+    - [RSA](#rsa)
+    - [ECC](#ecc)
   - [Existing Key Generation](#existing-key-generation)
     - [Option 1: --import argument](#option-1---import-argument)
     - [Option 2: Manual Import](#option-2-manual-import)
@@ -56,11 +58,20 @@ The script comes with two modes:
 
 ### New Key Generation
 
-<small>`--new, -n`</small>
+<small>`-n, --new`</small>
 
 This mode generates entirely new keys, both private and public; as well as new certificates. If you have existing private keys you wish to generate new public keys or certificates for; this is **not** the setting you should use. See [Existing Key Generation](#existing-key-generation).
 
-To generate brand new keys, you must append `--new, -n` to the command:
+We given two different options for algorithms:
+
+- **RSA** keys are the product of two prime numbers. This algorithm provides higher compatibility and is more widely used, especially in traditional digital signing scenarios. It is the most trusted algorithm of the two, whereas, some argue that ECC keys could be breakable in the future as quantum computers become more mainstream.
+
+- **ECC** is a given point on a curve. This is calculated as a base point "multiplied" by a secret number, modulo the field prime. It is normally 256 bits in length (a 256-bit ECC key is equivalent to a 3072-bit RSA key), making it more secure and able to offer stronger anti-attack capabilities. Moreover, the computation of ECC is faster than RSA, and thus it offers higher efficiency and consumes fewer server resources.
+
+<br />
+
+#### RSA
+By default, the `-n, --new` flag defaults to the RSA algorithm. To generate brand new keys, you must append `-n, --new` to the command:
 
 ```shell
 generate --new
@@ -68,11 +79,24 @@ generate --new
 
 <br />
 
-If you wish for your keys to have a password, you must supply one using the `--password, -P` argument.
+You may also specify the RSA algorithm, even though it is default:
 
 ```shell
-generate --new --password "YourPassword"
+generate --new --algorithm rsa
 ```
+
+<br />
+
+If you wish for your keys to have a password, you must supply one using the `-P, --pass` argument.
+
+```shell
+generate --new --algorithm rsa --pass "YourPassword"
+```
+
+<br />
+
+#### ECC
+
 
 <br />
 
@@ -80,12 +104,28 @@ To generate `ECC` / `ECDSA`:
 
 ```shell ignore
 generate --new --algorithm ecc --pass "YourPassword"
+generate --new --algorithm ecc --pass "YourPassword" --passin "YourPassword" --passout "YourPassword"
+```
+
+<br />
+
+You can also specify the **curve** to use, however, when generating ECC keys, `secp384r1` is the default. The available options are the same as offered by OpenSSL.
+
+- secp384r1
+- secp521r1
+- sect571k1
+- c2pnb368w1
+- c2tnb431r1
+- prime256v1
+
+```shell
+generate --new --algorithm ecc --curve "secp384r1"
 ```
 
 <br />
 
 > [!NOTE]
-> As a security precaution so that you don't overwrite existing private keys, you **must** ensure you do not have any existing keys sitting in the folders. Even with using the `--new, -n` arguments; it will warn you about the existing keys and abort.
+> As a security precaution so that you don't overwrite existing private keys, you **must** ensure you do not have any existing keys sitting in the folders. Even with using the `-n, --new` arguments; it will warn you about the existing keys and abort.
 
 <br />
 
@@ -181,7 +221,7 @@ generate --name "Friendly Name" --days 365 --comment "Renewal for existing keys"
 If your existing private keys contain a password, you must supply that password:
 
 ```shell
-generate --name "Friendly Name" --days 365 --comment "Renewal for existing keys" --password "YourPassword"
+generate --name "Friendly Name" --days 365 --comment "Renewal for existing keys" --pass "YourPassword"
 ```
 
 <br />
@@ -287,7 +327,7 @@ This utility has the following available arguments you can pass:
 
 | Argument | Description |
 | --- | --- |
-| <small>`--new, -n`</small> | <small>Generates new keys if existing private keys do not exist in the base folders `rootCA`, `domain`, and `master`</small> |
+| <small>`-n, --new`</small> | <small>Generates new keys if existing private keys do not exist in the base folders `rootCA`, `domain`, and `master`</small> |
 | <small>`--import, -i`</small> | <small>Import existing RSA or ECC private key, and generate new public keys and certificates based on the private key.</small> |
 | <small>`--algorithm, -a`</small> | <small>Algorithm to use for key generation. These are the values available within OpenSSL. <br /><br /> `ecc`, `rsa` <br /><br /> Default: `rsa`</small> |
 | <small>`--curve, -V`</small> | <small>ECC curve; accepts all curves available through OpenSSL <br /><br /> `secp384r1`, `secp521r1`, `sect571k1`, `c2pnb368w1`, `c2tnb431r1`, `prime256v1` <br /><br /> Default: `rsa`</small> |
@@ -381,7 +421,7 @@ generator --help
 <br />
 
 ### New
-<small>`--new, -n`</small>
+<small>`-n, --new`</small>
 
 The new command generates new keys and certificates, including the main private keys. If you do not specify this flag, you must already have existing private keys added so that it will build certificates and public keys based on the private keys.
 
@@ -398,7 +438,7 @@ If you do not wish to generate new private keys, and want to use your own; you m
 
 <br />
 
-If you have the above private keys in place, you can exclude the `--new, -n` arguments, and new public keys and certificates will be generated based on the private keys.
+If you have the above private keys in place, you can exclude the `-n, --new` arguments, and new public keys and certificates will be generated based on the private keys.
 
 ```shell
 generate --comment "My Existing Key" --name "Original Key"
@@ -520,7 +560,7 @@ generate --rootcaFolder mydomain.com
 ### Passwords
 
 This utility uses the same structure that OpenSSL does when dealing with the parameters:
-- password
+- pass
 - passin
 - passout
 
@@ -531,17 +571,17 @@ Several commands accept password arguments, typically using -passin and -passout
 If you are attempting to generate new files based on an existing key which is password protected; you must supply that password as part of the command.
 
 ```shell
-generate --new --password "YourExistingPassword"
+generate --new --pass "YourExistingPassword"
 ```
 
 <br />
 
 If you are generating certs based on an existing key which has a password, and you'd also like your new keys to have a different password, specify `--passout`. 
 
-This means your input password protected key will be specified by `--password`, and the outgoing keys will use the password supplied by `--passout`.
+This means your input password protected key will be specified by `--pass`, and the outgoing keys will use the password supplied by `--passout`.
 
 ```shell
-generate --password "YourExistingPassword" --passout "YourNewPassword"
+generate --pass "YourExistingPassword" --passout "YourNewPassword"
 ```
 
 <br />
@@ -553,7 +593,7 @@ generate --password "YourExistingPassword" --passout "YourNewPassword"
 This specifies the "friendly name" for the certificates and private key. This name is typically displayed in list boxes by software importing the file.
 
 ```shell
-generate --new --name "My certificate" --password "YourExistingPassword"
+generate --new --name "My certificate" --pass "YourExistingPassword"
 ```
 
 <br />
@@ -565,7 +605,7 @@ generate --new --name "My certificate" --password "YourExistingPassword"
 Specifies how long until the created certificate expires. The following example will set the certificate to last `1095` days, or 3 years.
 
 ```shell
-generate --new --name "My certificate" --days 1095 --password "YourExistingPassword"
+generate --new --name "My certificate" --days 1095 --pass "YourExistingPassword"
 ```
 
 <br />
@@ -577,7 +617,7 @@ generate --new --name "My certificate" --days 1095 --password "YourExistingPassw
 Defines a comment to be added to RSA keys generated. If a comment is not specified, comment will default to `OCG 1.x.x`; which stands for **OpenSSL Certificate Generator**.
 
 ```shell
-generate --new --name "My certificate" --days 1095 --comment "Work keys" --password "YourExistingPassword"
+generate --new --name "My certificate" --days 1095 --comment "Work keys" --pass "YourExistingPassword"
 ```
 
 <br />
