@@ -11,6 +11,8 @@
 #           SSL certificate for websites
 #       Authentication Authority
 #           SSH authentication cert and keys
+#       Encryption Authority
+#           Bitlocker & EFS encryption cert and keys
 #   
 #   After a successful run, you should have the following structure:
 #       
@@ -1709,6 +1711,7 @@ fi
 #   rootCA -name should use "CompanyName Certificate Authority"
 #   domain -name should use "CompanyName Domain Authority"
 #   master -name should use "CompanyName Authentication Authority"
+#   bitlocker -name should use "CompanyName Encryption Authority"
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${EXT_PFX}${END}"
@@ -1874,6 +1877,7 @@ fi
 #   rootCA -name should use "CompanyName Certificate Authority"
 #   domain -name should use "CompanyName Domain Authority"
 #   master -name should use "CompanyName Authentication Authority"
+#   bitlocker -name should use "CompanyName Encryption Authority"
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}"
@@ -2282,6 +2286,7 @@ fi
 #   rootCA -name should use "CompanyName Certificate Authority"
 #   domain -name should use "CompanyName Domain Authority"
 #   master -name should use "CompanyName Authentication Authority"
+#   bitlocker -name should use "CompanyName Encryption Authority"
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_MASTER_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_MASTER_BASE}.${SSL_KEYSTORE_PFX}${END}"
@@ -2693,13 +2698,14 @@ fi
 #   rootCA -name should use "CompanyName Certificate Authority"
 #   domain -name should use "CompanyName Domain Authority"
 #   master -name should use "CompanyName Authentication Authority"
+#   bitlocker -name should use "CompanyName Encryption Authority"
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}${END}"
-openssl pkcs12 -export -name "${PARAM_FRIENDLY} Domain Authority" -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -inkey "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
+openssl pkcs12 -export -name "${PARAM_FRIENDLY} Encryption Authority" -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -inkey "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Domain Authority\" -in \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -inkey \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
+    echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Encryption Authority\" -in \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -inkey \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
