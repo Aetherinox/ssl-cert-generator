@@ -218,7 +218,7 @@ x509_extensions                 = x509_bitlocker
             description                     = OrgName Encryption Certificate RSA 4096
             givenName                       = OrgName Encryption Authority
             title                           = domain.local
-            initials                        = 001-ssl-encrypt
+            initials                        = ocg-ssl-9d-encrypt
 
             # #
             #   Extensions for client certificates (`man x509v3_config`)

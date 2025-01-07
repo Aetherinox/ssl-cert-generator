@@ -173,7 +173,7 @@ x509_extensions                 = x509_rootCA
             title_default                   = Root Certificate Authority
 
             initials                        = Certificate Initials
-            initials_default                = 001-ssl-ca
+            initials                        = ocg-ssl-ca
 
             # #
             #   Root CA > Extensions
@@ -221,7 +221,7 @@ x509_extensions                 = x509_domain
             stateOrProvinceName             = NA
             localityName                    = NA
             organizationName                = OrgName
-            organizationalUnitName          = OrgName Trust Services
+            organizationalUnitName          = OrgName Domain Services
             commonName                      = *.domain.local
             emailAddress                    = system@domain.local
             description                     = OrgName Domain Certificate RSA 4096
@@ -320,12 +320,12 @@ x509_extensions                 = x509_9a_master
             localityName                    = NA
             organizationName                = OrgName
             organizationalUnitName          = OrgName Authentication Services
-            commonName                      = YourName, *.domain.local
+            commonName                      = OrgName Authentication RSA 4096 - Your Name
             emailAddress                    = username@domain.local
             description                     = OrgName Authentication Certificate RSA 4096
             givenName                       = OrgName Authentication Authority
             title                           = OrgName.local
-            initials                        = ocg-ssl-9a
+            initials                        = ocg-ssl-9a-auth
 
             [ x509_9a_master ]
             subjectKeyIdentifier            = hash
