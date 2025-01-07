@@ -1,5 +1,5 @@
 # #
-#   OpenSSL Config
+#   OpenSSL Config > Root Certificate Authority
 #   
 #   should be used in combination with generate bash utility
 # #
@@ -17,6 +17,12 @@
 #   the root CA to sign certificates on their behalf. This is best practice. It allows the 
 #   root key to be kept offline and unused as much as possible, as any compromise of the root 
 #   key is disastrous.
+# #
+
+# #
+#   USAGE
+#
+#   generate --new --pass "YourPass" --passin "YourPass" --passout "YourPass" --name "domain.local"
 # #
 
 oid_section                     = oids
