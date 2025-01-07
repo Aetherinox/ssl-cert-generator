@@ -1,37 +1,22 @@
 # #
 #   OpenSSL Config
-#
+#   
 #   should be used in combination with generate bash utility
 # #
 
 # #
 #   CERTIFICATE AUTHORITY (ROOT)
-#
+#   
 #   Acting as a certificate authority (CA) means dealing with cryptographic pairs of private 
 #   keys and public certificates. The very first cryptographic pair we’ll create is the root pair.
 #   This consists of the root key (ca.key.pem) and root certificate (ca.cert.pem).
 #   This pair forms the identity of your CA.
-#
+#   
 #   Typically, the root CA does not sign server or client certificates directly.
 #   The root CA is only ever used to create one or more intermediate CAs, which are trusted by 
 #   the root CA to sign certificates on their behalf. This is best practice. It allows the 
 #   root key to be kept offline and unused as much as possible, as any compromise of the root 
 #   key is disastrous.
-# #
-
-# #
-#   CERTIFICATE AUTHORITY (INTERMEDIATE)
-#  
-#   an entity that can sign certificates on behalf of the root CA.
-#   The root CA signs the intermediate certificate, forming a chain of trust.
-#  
-#   The purpose of using an intermediate CA is primarily for security. The root key can be kept offline
-#   and used as infrequently as possible. If the intermediate key is compromised, the root CA can revoke
-#   the intermediate certificate and create a new intermediate cryptographic pair.
-#
-#   We will be signing certificates using our intermediate CA. You can use these signed certificates
-#   in a variety of situations, such as to secure connections to a web server or to authenticate 
-#   clients connecting to a service.
 # #
 
 oid_section                     = oids
@@ -50,7 +35,7 @@ default_ca                      = CA_default
 
 # #
 #   Policy > Strict
-#
+#   
 #   The root CA should only sign intermediate certificates that match.
 #   See the POLICY FORMAT section of `man ca`.
 # #
@@ -65,7 +50,7 @@ emailAddress                    = optional
 
 # #
 #   Policy > Loose
-#
+#   
 #   Allow the intermediate CA to sign a more diverse range of certificates.
 #   See the POLICY FORMAT section of the `ca` man page.
 # #
@@ -81,7 +66,7 @@ emailAddress                    = optional
 
 # #
 #   Directory & file locations
-#
+#   
 #   if using the bash generator utility; do not change `dir` or any
 #   of the other paths
 # #
@@ -105,18 +90,18 @@ crlnumber                       = $dir/crlnumber
 crl                             = $dir/crl/ca.crl.pem
 crl_extensions                  = crl_ext
 default_crl_days                = 36500
+default_days                    = 36500
 
 default_bits                    = 4096
 default_md                      = sha512
 name_opt                        = ca_default
 cert_opt                        = ca_default
-default_days                    = 36500
 preserve                        = no
 policy                          = policy_loose
 
             # #
             #   Certificate Revocation Lists
-            #
+            #   
             #   Called from [ CA_default ]
             # #
 
@@ -125,14 +110,14 @@ policy                          = policy_loose
 
 # #
 #   Root CA > PKCS#10 Certificate Request
-#
+#   
 #   Configures the openssl req command
 #   called via openssl req -section req_rootCA
-#
+#   
 #   dont use the 'prompt' option unless you want to change how this file is structured.
 #   prompt=no           the default values don't come from fieldname_default, they come from
 #                       the actual values specified below.
-#
+#   
 #   prompt=yes          the default values come from fieldname_default.
 # #
 
@@ -140,18 +125,19 @@ policy                          = policy_loose
 default_bits                    = 4096
 default_keyfile                 = rootCA.key.main-01.enc.priv.pem
 default_md                      = sha512
+default_crl_days                = 36500
 default_days                    = 36500
 string_mask                     = MASK:0x2002
 utf8                            = yes
 # prompt                        = no
-serial                          = 001-ssl-ca
+serial                          = 001-ssl-rootCA
 copy_extensions                 = copy
 distinguished_name              = dn_rootCA
 x509_extensions                 = x509_rootCA
 
             # #
             #   Root CA > Distinguished Name - Template
-            #
+            #   
             #   <https://en.wikipedia.org/wiki/Certificate_signing_request>
             # #
 
@@ -191,7 +177,7 @@ x509_extensions                 = x509_rootCA
 
             # #
             #   Root CA > Extensions
-            #
+            #   
             #   executed from bash script with command
             #       openssl req -config "/home/USERNAME/Desktop/ssh/certificates/rootCA/rootCA.cnf" -key "rootCA.key.main-01.enc.priv.pem" -new -x509 -days 36500 -sha512 -section req_rootCA -extensions x509_rootCA -out "/home/USERNAME/Desktop/ssh/certificates/rootCA/rootCA.crt" -passout pass:"******" -passin pass:"******" --batch
             # #
@@ -201,12 +187,12 @@ x509_extensions                 = x509_rootCA
             authorityKeyIdentifier          = keyid:always,issuer
             basicConstraints                = critical, CA:true
             keyUsage                        = critical, digitalSignature, cRLSign, keyCertSign
-            nsComment                       = "Root Certificate Authority"
+            nsComment                       = "OrgName Root Certificate Authority"
             issuerAltName                   = issuer:copy
 
 # #
 #   Domain > PKCS#10 Certificate Request
-#
+#   
 #   Configures the openssl req command
 #   called via openssl req -section req_domain
 # #
@@ -215,6 +201,7 @@ x509_extensions                 = x509_rootCA
 default_bits                    = 4096
 default_keyfile                 = domain.key.main-01.enc.priv.pem
 default_md                      = sha512
+default_crl_days                = 36500
 default_days                    = 36500
 string_mask                     = MASK:0x2002
 utf8                            = yes
@@ -225,7 +212,7 @@ x509_extensions                 = x509_domain
 
             # #
             #   Domain > Distinguished Name - Defaults
-            #
+            #   
             #   <https://en.wikipedia.org/wiki/Certificate_signing_request>
             # #
 
@@ -239,14 +226,14 @@ x509_extensions                 = x509_domain
             emailAddress                    = system@domain.local
             description                     = OrgName Domain Certificate RSA 4096
             givenName                       = OrgName Domain Authority
-            title                           = domain.lan
+            title                           = domain.local
             initials                        = ocg-ssl-domain
 
             # #
             #   Extensions for client certificates (`man x509v3_config`)
-            #
+            #   
             #   this should be called when you are ready to sign the CSR with the rootCA
-            #
+            #   
             #   executed from bash script with command
             #       openssl ca -config "/home/USERNAME/Desktop/ssh/certificates/rootCA/rootCA.cnf" -multivalue-rdn -preserveDN -extensions x509_domain -days 36500 -notext -md sha512 -in "/home/USERNAME/Desktop/ssh/certificates/domain/domain.csr" -out "/home/USERNAME/Desktop/ssh/certificates/domain/domain.crt" -passin pass:"******" -batch
             # #
@@ -254,7 +241,7 @@ x509_extensions                 = x509_domain
             # #
             #   nsCertType      client, server, email, objsign, reserved, sslCA, emailCA, objCA
             #   keyUsage        digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign, cRLSign, encipherOnly, and decipherOnly.
-            #
+            #   
             #   extendedKeyUsage
             #       serverAuth              SSL/TLS WWW Server Authentication
             #       clientAuth              SSL/TLS WWW Client Authentication
@@ -267,7 +254,7 @@ x509_extensions                 = x509_domain
             #       msCodeCom               Microsoft Commercial Code Signing (authenticode)
             #       msCTLSign               Microsoft Trust List Signing
             #       msEFS                   Microsoft Encrypted File System
-            #
+            #   
             #   nsBaseUrl                   Base URL for all others URL addresses 
             #   nsSslServerName             SSL Server Name
             #   nsCaPolicyUrl               Link where the CA policy can be found
@@ -290,8 +277,8 @@ x509_extensions                 = x509_domain
             nsRenewalUrl                    = ""
             nsCaRevocationUrl               = "http://ssl.domain.local/rootCA.crl"
             nsRevocationUrl                 = "http://ssl.domain.local/rootCA.crl"
-            nsComment                       = "*.domain.lan Domain Certificate"
-            issuerAltName                   = URI:https://ssl.domain.com/rootCA.crt
+            nsComment                       = "*.domain.local Domain Certificate"
+            issuerAltName                   = URI:https://ssl.domain.local/rootCA.crt
             subjectAltName                  = @sans
             keyUsage                        = critical, digitalSignature, keyEncipherment, keyAgreement
             extendedKeyUsage                = critical, serverAuth, clientAuth
@@ -301,9 +288,9 @@ x509_extensions                 = x509_domain
 
 # #
 #   Master (9A) > PKCS#10 Certificate Request
-#
+#   
 #   Configures the openssl req command called via openssl req -section req_domain
-#
+#   
 #   this is utilized to generate domain SSL certificates with full permissions, utilized for SSH, etc.
 #   imported onto Yubikey as '9A'
 # #
@@ -312,6 +299,7 @@ x509_extensions                 = x509_domain
 default_bits                    = 4096
 default_keyfile                 = 9a.key.main-01.enc.priv.pem
 default_md                      = sha512
+default_crl_days                = 36500
 default_days                    = 36500
 string_mask                     = MASK:0x2002
 utf8                            = yes
@@ -350,7 +338,7 @@ x509_extensions                 = x509_9a_master
             nsCaRevocationUrl               = "http://ssl.domain.local/rootCA.crl"
             nsRevocationUrl                 = "http://ssl.domain.local/rootCA.crl"
             nsComment                       = "OrgName Authentication Certificate (9A)"
-            issuerAltName                   = URI:https://ssl.domain.com/rootCA.crt
+            issuerAltName                   = URI:https://ssl.domain.local/rootCA.crt
             subjectAltName                  = @sans
             # keyUsage                      = critical, digitalSignature, keyEncipherment, keyAgreement
             # extendedKeyUsage              = critical, serverAuth, clientAuth
@@ -359,11 +347,21 @@ x509_extensions                 = x509_9a_master
             authorityInfoAccess             = OCSP;URI:http://ssl.domain.local/ocsp, caIssuers;URI:http://ssl.domain.local/rootCA.crt
 
 # #
-#   Intermediate CA > Extensions
+#   CERTIFICATE AUTHORITY (INTERMEDIATE)
 #
 #   should be called if you have an intermediate certificate authority
-#
-#   openssl ca -config "certificates/rootCA/rootCA.cnf" -extensions v3_intermediate_ca -days 36500 -notext -md sha512 -in "certificates/domain/domain.csr" -out "certificates/domain/domain.csr.signed.crt"
+#       openssl ca -config "certificates/rootCA/rootCA.cnf" -extensions v3_intermediate_ca -days 36500 -notext -md sha512 -in "certificates/domain/domain.csr" -out "certificates/domain/domain.csr.signed.crt"
+#   
+#   an entity that can sign certificates on behalf of the root CA.
+#   The root CA signs the intermediate certificate, forming a chain of trust.
+#  
+#   The purpose of using an intermediate CA is primarily for security. The root key can be kept offline
+#   and used as infrequently as possible. If the intermediate key is compromised, the root CA can revoke
+#   the intermediate certificate and create a new intermediate cryptographic pair.
+#   
+#   We will be signing certificates using our intermediate CA. You can use these signed certificates
+#   in a variety of situations, such as to secure connections to a web server or to authenticate 
+#   clients connecting to a service.
 # #
 
 [ v3_intermediate_ca ]
@@ -386,7 +384,7 @@ extendedKeyUsage                = critical, OCSPSigning
 
 # #
 #   Policies
-#
+#   
 #   2.23.140.1.2.1              domain validation
 # #
 
@@ -397,7 +395,7 @@ userNotice.1                    = @policies_domain_notice
 
 [ policies_domain_notice ]
 explicitText                    = "Domain Validation Certificate"
-organization                    = "Root Certificate Authority"
+organization                    = "OrgName Root CA"
 
 # #
 #   See document "US DoD X.509 Certificate Policy", section 1.2.
@@ -415,7 +413,7 @@ noticeNumbers                   = 19
 
 # #
 #   Subject Alternative Name(s) (SAN)
-#
+#   
 #   *.localhost required for programs like Duplicati
 # #
 
