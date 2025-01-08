@@ -111,7 +111,8 @@
 #       generate --new --pass "abc"
 #       generate --new --pass "abc" --algorithm "ecc" || "rsa"
 #       generate --new --pass "abc" --algorithm "ecc" --homeFolder "/path/to/certs"
-#       generate --new --pass "abc" --algorithm "ecc" --homeFolder "/path/to/certs" --domainFolder "domain.com"
+#       generate --new --pass "abc" --algorithm "ecc" --config "rootCA-ecc.cnf" --name "Domain.local"
+#       generate --new --pass "abc" --algorithm "ecc" --config "rootCA-ecc.cnf" --homeFolder "/path/to/certs" --domainFolder "domain.com"
 #       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --homeFolder "/path/to/certs" --domainFolder "domain.com"
 #       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --name "Domain.com"
 #       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --curve "secp521r1" --name "Domain.com"
@@ -364,19 +365,6 @@ PWD_RAW=""
 PWD_STR=""
 
 # #
-#   DEFINE > Options
-# #
-
-PARAM_COMMENT="${APP_TITLE} $(get_version)"
-PARAM_FRIENDLY="CompanyName"
-PARAM_ALGORITHM="rsa"
-PARAM_DAYS=36500
-PARAM_BITS=4096
-PARAM_CURVE=secp384r1
-BOOL_DEV_ENABLED="false"
-BOOL_NEW_KEYS="false"
-
-# #
 #   DEFINE > Extensions
 # #
 
@@ -416,7 +404,23 @@ SSL_CERT_MAIN_UNC="keycert.main-01.unc.priv.${EXT_PEM}"
 SSL_CERT_FULLCHAIN="fullchain.${EXT_CRT}"
 SSL_KEYSTORE_PFX="keystore.normal.${EXT_PFX}"
 SSL_KEYSTORE_B64="keystore.base64.${EXT_PFX}"
-EXT_CRL_PEM="${EXT_CRL}.${EXT_PEM}"
+SSL_EXT_CRL_PEM="${EXT_CRL}.${EXT_PEM}"
+
+# #
+#   DEFINE > Options
+# #
+
+PARAM_COMMENT="${APP_TITLE} $(get_version)"
+PARAM_FRIENDLY="CompanyName"
+PARAM_ALGORITHM="rsa"
+PARAM_DAYS=36500
+PARAM_BITS=4096
+PARAM_CURVE=secp384r1
+PARAM_CNF_ROOTCA="${FILE_CNF_ROOTCA}.${EXT_CNF}"
+PARAM_CNF_BITLOCKER="${FILE_CNF_BITLOCKER}.${EXT_CNF}"
+PARAM_CNF="${PARAM_CNF_ROOTCA}"
+BOOL_DEV_ENABLED="false"
+BOOL_NEW_KEYS="false"
 
 # #
 #   func > version > compare greater than
@@ -449,15 +453,15 @@ readStatus()
     echo -e " ${GREY1}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
 
     if ( set +f; ls ${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.*${EXT_CNF}* ) 1> /dev/null 2>&1; then
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END}" "✔️${END}"
     else
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END}" "❌${END}"
     fi
 
     if ( set +f; ls ${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.*${EXT_CNF}* ) 1> /dev/null 2>&1; then
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.${EXT_CNF}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}${END}" "✔️${END}"
     else
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.${EXT_CNF}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}${END}" "❌${END}"
     fi
 
     if ( set +f; ls ${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT} ) 1> /dev/null 2>&1; then
@@ -596,16 +600,19 @@ readStatus()
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" "❌${END}"
     fi
+
     if ( set +f; ls ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}* ) 1> /dev/null 2>&1; then
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}" "✔️${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}" "❌${END}"
     fi
-    if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}" "✔️${END}"
+
+    if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}${END}" "✔️${END}"
     else
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}${END}" "❌${END}"
     fi
+
     if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}* ) 1> /dev/null 2>&1; then
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}" "✔️${END}"
     else
@@ -723,10 +730,10 @@ readStatus()
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}${END}" "❌${END}"
     fi
 
-    if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}${END}" "✔️${END}"
+    if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}${END}" "✔️${END}"
     else
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}${END}" "❌${END}"
     fi
 
     if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}* ) 1> /dev/null 2>&1; then
@@ -734,7 +741,6 @@ readStatus()
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}${END}" "❌${END}"
     fi
-
 
     echo -e
     echo -e "  ${BLUE} 📜 ${FILE_BITLOCKER_BASE} ${END}"
@@ -847,10 +853,10 @@ readStatus()
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}${END}" "❌${END}"
     fi
 
-    if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}${END}" "✔️${END}"
+    if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}* ) 1> /dev/null 2>&1; then
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}${END}" "✔️${END}"
     else
-        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}${END}" "❌${END}"
+        printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}${END}" "❌${END}"
     fi
 
     if ( set +f; ls ${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}* ) 1> /dev/null 2>&1; then
@@ -897,8 +903,8 @@ opt_usage()
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_CNF_ROOTCA}.${EXT_CNF}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_CNF_BITLOCKER}.${EXT_CNF}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${PARAM_CNF_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${PARAM_CNF_BITLOCKER}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${EXT_CRT}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" 1>&2
     printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" 1>&2
@@ -914,6 +920,7 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}requires that the utility folders be clean. any existing private keys will block${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}this command from generating new keys. delete any private key files ending with${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}.pem or .key${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-f,  --config" "OpenSSL config file to load - default: ${PEACH}${PARAM_CNF_ROOTCA}${END}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-i,  --import" "Import existing RSA or ECC private key${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}allows you to import an existing private key from another directory.${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}must specify a private key with an intact header. the following are acceptable:${END}" 1>&2
@@ -942,8 +949,8 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "-D,  --domainFolder" "Set the domain folder - default: ${PEACH}${FOLDER_DOMAIN}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-d,  --days" "Certificate expiration time in days" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-t,  --comment" "specify a comment to add to RSA and OpenSSH keys" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-c,  --clean" "Remove all files, but keep ${PEACH}${FILE_CNF_ROOTCA}.${EXT_CNF}${END}, and main private ${PEACH}${EXT_PEM}${END} keys" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-w,  --wipe" "Remove every file in certificates folder except ${PEACH}${FILE_CNF_ROOTCA}.${EXT_CNF}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-c,  --clean" "Remove all files, but keep ${PEACH}${PARAM_CNF_ROOTCA}${END}, and main private ${PEACH}${EXT_PEM}${END} keys" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-w,  --wipe" "Remove every file in certificates folder except ${PEACH}${PARAM_CNF_ROOTCA}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-v,  --vars" "List all variables / paths" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-s,  --status" "Output a list of certs & keys generated to check for all files" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-v,  --version" "Current version of this generator" 1>&2
@@ -964,6 +971,11 @@ opt_usage()
 
 while [ $# -gt 0 ]; do
     case "$1" in
+        -f|--config)
+            if [[ "$1" != *=* ]]; then shift; fi
+            PARAM_CNF="${1#*=}"
+            ;;
+
         -P|--passwd|--pass|--password)
             if [[ "$1" != *=* ]]; then shift; fi
             PWD_RAW="${1#*=}"
@@ -1131,8 +1143,9 @@ while [ $# -gt 0 ]; do
             # #
 
             find ${PATH_CERTS} \
-            ! -name "${FILE_CNF_ROOTCA}.${EXT_CNF}" \
-            ! -name "${FILE_CNF_BITLOCKER}.${EXT_CNF}" \
+            ! -name "${PARAM_CNF_ROOTCA}" \
+            ! -name "${PARAM_CNF_BITLOCKER}" \
+            ! -name "*.${EXT_CNF}" \
             ! -name "${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" \
             ! -name "${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" \
             ! -name "${FILE_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" \
@@ -1155,8 +1168,9 @@ while [ $# -gt 0 ]; do
             # #
 
             find ${PATH_CERTS} \
-            ! -name "${FILE_CNF_ROOTCA}.${EXT_CNF}" \
-            ! -name "${FILE_CNF_BITLOCKER}.${EXT_CNF}" \
+            ! -name "${PARAM_CNF_ROOTCA}" \
+            ! -name "${PARAM_CNF_BITLOCKER}" \
+            ! -name "*.${EXT_CNF}" \
             -type f -exec rm -f {} +
 
             exit 1
@@ -1221,7 +1235,7 @@ while [ $# -gt 0 ]; do
             printf '%-60s %-40s\n' "  ${GREEN}  ↳ 🔑 \$EXT_CRT${END}" "${EXT_CRT}${END}"
             printf '%-60s %-40s\n' "  ${GREEN}  ↳ 🔑 \$EXT_CSR${END}" "${EXT_CSR}${END}"
             printf '%-60s %-40s\n' "  ${GREEN}  ↳ 🔑 \$EXT_CRL${END}" "${EXT_CRL}${END}"
-            printf '%-60s %-40s\n' "  ${GREEN}  ↳ 🔑 \$EXT_CRL_PEM${END}" "${EXT_CRL_PEM}${END}"
+            printf '%-60s %-40s\n' "  ${GREEN}  ↳ 🔑 \$SSL_EXT_CRL_PEM${END}" "${SSL_EXT_CRL_PEM}${END}"
             printf '%-60s %-40s\n' "  ${GREEN}  ↳ 🔑 \$SSL_CERT_FULLCHAIN${END}" "${SSL_CERT_FULLCHAIN}${END}"
 
             echo -e
@@ -1493,8 +1507,8 @@ fi
 #   Core > Check > OpenSSL Configs
 # #
 
-if [ ! -f "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-009${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${RED}Missing ${GREY3}${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}${END}"
+if [ ! -f "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-009${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${RED}Missing ${GREY3}${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END}"
 
     echo -e
     echo -e " ${BLUE}---------------------------------------------------------------------------------------------------${END}"
@@ -1502,7 +1516,7 @@ if [ ! -f "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" ]; then
     echo -e "  ${BOLD}${ORANGE}WARNING  ${WHITE}Could not locate ${FILE_ROOTCA_BASE}.${EXT_CNF} OpenSSL Config${END}"
     echo -e "  ${BOLD}This script cannot continue to run without the file being available in your folder structure."
     echo -e
-    echo -e "      ${BOLD}${GREY2}Missing: ${ORANGE}${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}${END}"
+    echo -e "      ${BOLD}${GREY2}Missing: ${ORANGE}${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END}"
     echo -e
     echo -e " ${BLUE}---------------------------------------------------------------------------------------------------${END}"
     echo -e
@@ -1510,23 +1524,23 @@ if [ ! -f "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" ]; then
     exit 1
 
 else
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-009${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-009${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END}"
 fi
 
 # #
 #   Core > Check cnf files for unset IP
 # #
 
-if grep -R "XX.XX.XX.XX" "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" >/dev/null 2>&1; then
+if grep -R "XX.XX.XX.XX" "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" >/dev/null 2>&1; then
 
-    STR_FOUND=$(grep -R "XX.XX.XX.XX" "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}")
-    STR_LINE=$(grep -n "XX.XX.XX.XX" "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" | cut -d : -f 1)
+    STR_FOUND=$(grep -R "XX.XX.XX.XX" "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}")
+    STR_LINE=$(grep -n "XX.XX.XX.XX" "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" | cut -d : -f 1)
 
     echo -e
     echo -e " ${BLUE}---------------------------------------------------------------------------------------------------${END}"
     echo -e
     echo -e "  ${BOLD}${ORANGE}WARNING  ${WHITE}You have not configured a valid IP address.${END}"
-    echo -e "  ${BOLD}Open ${GREY2}${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}${END} and change ${ORANGE}XX.XX.XX.XX${END} to a real IP."
+    echo -e "  ${BOLD}Open ${GREY2}${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END} and change ${ORANGE}XX.XX.XX.XX${END} to a real IP."
     echo -e
     echo -e "      ${BOLD}${GREY2}Line ${STR_LINE}     ${RED}${STR_FOUND}${END}"
     echo -e
@@ -1726,10 +1740,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${EXT_CRT}${END}"
-openssl req -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -key "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out "${PATH_ROOTCA_BASE}.${EXT_CRT}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -config "${PATH_ROOTCA}/${PARAM_CNF}" -key "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out "${PATH_ROOTCA_BASE}.${EXT_CRT}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -key \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch${END}
+    echo ‎ ‎${GREY2} ↳  openssl req -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -key \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch${END}
     echo -e
 fi
 
@@ -1754,11 +1768,11 @@ fi
 #   rootCA > Create > crl/rootCA.crl.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}${END}"
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
@@ -1767,10 +1781,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-015${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}${END}"
-openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}"
+openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}\"
+    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
@@ -1874,10 +1888,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -section ${SECTION_DOMAIN} -out "${PATH_DOMAIN_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -sha512 -new -key "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF}" -section ${SECTION_DOMAIN} -out "${PATH_DOMAIN_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -section ${SECTION_DOMAIN} -out \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
+    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -section ${SECTION_DOMAIN} -out \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
     echo -e
 fi
 
@@ -1892,10 +1906,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_DOMAIN_BASE}.${EXT_CSR}" -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
+openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_DOMAIN_BASE}.${EXT_CSR}" -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
+    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
@@ -2148,11 +2162,11 @@ fi
 #   Domain > Create > crl/domain.crl.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}${END}"
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
@@ -2161,10 +2175,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}"
-openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}"
+openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}\"
+    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
@@ -2283,10 +2297,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -section ${SECTION_AUTH} -out "${PATH_AUTH_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -sha512 -new -key "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF}" -section ${SECTION_AUTH} -out "${PATH_AUTH_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -section ${SECTION_AUTH} -out \"${PATH_AUTH_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
+    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -section ${SECTION_AUTH} -out \"${PATH_AUTH_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
     echo -e
 fi
 
@@ -2301,10 +2315,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_AUTH_BASE}.${EXT_CSR}" -out "${PATH_AUTH_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
+openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_AUTH_BASE}.${EXT_CSR}" -out "${PATH_AUTH_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_AUTH_BASE}.${EXT_CSR}\" -out \"${PATH_AUTH_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
+    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_AUTH_BASE}.${EXT_CSR}\" -out \"${PATH_AUTH_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
@@ -2556,11 +2570,11 @@ fi
 #   Authentication > Create > crl/auth.crl.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}${END}"
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
@@ -2569,10 +2583,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}${END}"
-openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}"
+openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}\"
+    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
@@ -2695,10 +2709,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.${EXT_CNF}" -section ${SECTION_BITLOCKER} -out "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -sha512 -new -key "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}" -section ${SECTION_BITLOCKER} -out "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.${EXT_CNF}\" -section ${SECTION_BITLOCKER} -out \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
+    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}\" -section ${SECTION_BITLOCKER} -out \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
     echo -e
 fi
 
@@ -2713,10 +2727,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.${EXT_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -out "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
+openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -out "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.${EXT_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -out \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
+    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -out \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
@@ -2969,11 +2983,11 @@ fi
 #   Bitlocker > Create > crl/bitlocker.crl.pem
 # #
 
-printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}${END}"
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.${EXT_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
@@ -2982,10 +2996,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}${END}"
-openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}"
+openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}"
 
 if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}\"
+    echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
