@@ -301,7 +301,7 @@ x509_extensions                 = x509_domain
 #   imported onto Yubikey as '9A'
 # #
 
-[ req_9a_master ]
+[ req_9a_auth ]
 default_bits                    = 4096
 default_keyfile                 = 9a.key.main-01.enc.priv.pem
 default_md                      = sha512
@@ -310,9 +310,9 @@ default_days                    = 36500
 string_mask                     = MASK:0x2002
 utf8                            = yes
 prompt                          = no
-distinguished_name              = dn_9a_master
-req_extensions                  = x509_9a_master
-x509_extensions                 = x509_9a_master
+distinguished_name              = dn_9a_auth
+req_extensions                  = x509_9a_auth
+x509_extensions                 = x509_9a_auth
 
             # #
             #   Master (9A) > Distinguished Name - Defaults
@@ -320,7 +320,7 @@ x509_extensions                 = x509_9a_master
             #   <https://en.wikipedia.org/wiki/Certificate_signing_request>
             # #
 
-            [ dn_9a_master ]
+            [ dn_9a_auth ]
             countryName                     = NA
             stateOrProvinceName             = NA
             localityName                    = NA
@@ -333,7 +333,7 @@ x509_extensions                 = x509_9a_master
             title                           = OrgName.local
             initials                        = ocg-ssl-9a-auth
 
-            [ x509_9a_master ]
+            [ x509_9a_auth ]
             subjectKeyIdentifier            = hash
             basicConstraints                = CA:false, pathlen:0
             nsCertType                      = sslCA, objsign, objCA

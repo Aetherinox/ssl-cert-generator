@@ -2219,7 +2219,7 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         openssl rsa -in "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}\"
+            echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}\" -passin \"pass:${PWD_IN}\" -passout \"pass:${PWD_OUT}\"
             echo -e
         fi
     fi
