@@ -264,18 +264,18 @@ x509_extensions                 = x509_bitlocker
           # nsCertType                      = sslCA, objsign, objCA
             nsBaseUrl                       = "http://ssl.domain.local/"
             nsSslServerName                 = *.localhost
-            nsCaPolicyUrl                   = "http://ssl.domain.local/policy.php"
-            nsRenewalUrl                    = "http://ssl.domain.local/renewal.php"
-            nsCaRevocationUrl               = "http://ssl.domain.local/rootCA.crl"
-            nsRevocationUrl                 = "http://ssl.domain.local/9d.crl"
+            nsCaPolicyUrl                   = "http://ssl.domain.local/rsa/policy.php"
+            nsRenewalUrl                    = "http://ssl.domain.local/rsa/renewal.php"
+            nsCaRevocationUrl               = "http://ssl.domain.local/rsa/rootCA.crl"
+            nsRevocationUrl                 = "http://ssl.domain.local/rsa/9d.crl"
             nsComment                       = "OrgName Encryption Certificate [9D]"
-            issuerAltName                   = URI:https://ssl.domain.local/rootCA.crt
+            issuerAltName                   = URI:https://ssl.domain.local/rsa/rootCA.crt
             subjectAltName                  = @sans
             keyUsage                        = critical,nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement
             extendedKeyUsage                = critical,serverAuth, clientAuth, emailProtection, msSGC, msEFS, msEFSR, nsSGC, msEFSRecovery, driveEncryption, driveRecovery, msSmartcardLogin, secureShellClient, secureShellServer, rda, gpgUsageCert, gpgUsageSign, gpgUsageEncr, gpgUsageAuth, msAuthenticode
             certificatePolicies             = @policies_domain_policy
-            crlDistributionPoints           = URI:http://ssl.domain.local/9d.crl,URI:http://ssl.domain.local/9d.crl.pem
-            authorityInfoAccess             = OCSP;URI:http://ssl.domain.local/ocsp, caIssuers;URI:http://ssl.domain.local/rootCA.crt
+            crlDistributionPoints           = URI:http://ssl.domain.local/rsa/9d.crl,URI:http://ssl.domain.local/rsa/9d.crl.pem
+            authorityInfoAccess             = OCSP;URI:http://ssl.domain.local/ocsp, caIssuers;URI:http://ssl.domain.local/rsa/rootCA.crt
 
 # #
 #   CERTIFICATE AUTHORITY (INTERMEDIATE)
