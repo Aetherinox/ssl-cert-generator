@@ -112,10 +112,10 @@
 #       generate --new --pass "abc" --algorithm "ecc" || "rsa"
 #       generate --new --pass "abc" --algorithm "ecc" --homeFolder "/path/to/certs"
 #       generate --new --pass "abc" --algorithm "ecc" --config "rootCA-ecc.cnf" --name "Domain.local"
-#       generate --new --pass "abc" --algorithm "ecc" --config "rootCA-ecc.cnf" --homeFolder "/path/to/certs" --domainFolder "domain.com"
-#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --homeFolder "/path/to/certs" --domainFolder "domain.com"
-#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --name "Domain.com"
-#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --curve "secp521r1" --name "Domain.com"
+#       generate --new --pass "abc" --algorithm "ecc" --config "rootCA-ecc.cnf" --homeFolder "/path/to/certs" --domainFolder "domain.local"
+#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --homeFolder "/path/to/certs" --domainFolder "domain.local"
+#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --name "Domain.local"
+#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --curve "secp521r1" --name "Domain.local"
 #       generate --vars
 #       generate --wipe
 #       generate --clean
@@ -920,7 +920,7 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}requires that the utility folders be clean. any existing private keys will block${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}this command from generating new keys. delete any private key files ending with${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}.pem or .key${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-f,  --config" "OpenSSL config file to load - default: ${PEACH}${PARAM_CNF_ROOTCA}${END}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-f,  --config" "OpenSSL config file to load - default: ${PEACH}${PARAM_CNF_ROOTCA}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-i,  --import" "Import existing RSA or ECC private key${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}allows you to import an existing private key from another directory.${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}must specify a private key with an intact header. the following are acceptable:${END}" 1>&2
@@ -974,6 +974,13 @@ while [ $# -gt 0 ]; do
         -f|--config)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_CNF="${1#*=}"
+            if [ -z "${PARAM_CNF}" ]; then
+                echo -e "  ${END}Must specify a valid OpenSSL .cnf config"
+                echo -e "  ${END}      Default:  ${YELLOW}${PARAM_CNF_ROOTCA}${END}"
+                echo -e
+
+                exit 1
+            fi
             ;;
 
         -P|--passwd|--pass|--password)
