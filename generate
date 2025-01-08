@@ -1069,6 +1069,11 @@ while [ $# -gt 0 ]; do
 
                 exit 1
             fi
+
+            if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+                PARAM_CNF_ROOTCA="${FILE_CNF_ROOTCA}-ecc.${EXT_CNF}"
+                PARAM_CNF="${PARAM_CNF_ROOTCA}"
+            fi
             ;;
 
         -V|--curve)
