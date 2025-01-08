@@ -110,8 +110,11 @@
 #   
 #       generate --new --pass "abc"
 #       generate --new --pass "abc" --algorithm "ecc" || "rsa"
-#       generate --new --pass "abc" --algorithm "ecc" --base "/path/to/cert/folder/out"
-#       generate --new --pass "abc" --algorithm "ecc" --base "/path/to/cert/folder/out" --domain "domain.com"
+#       generate --new --pass "abc" --algorithm "ecc" --homeFolder "/path/to/certs"
+#       generate --new --pass "abc" --algorithm "ecc" --homeFolder "/path/to/certs" --domainFolder "domain.com"
+#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --homeFolder "/path/to/certs" --domainFolder "domain.com"
+#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --name "Domain.com"
+#       generate --new --pass "abc" --passin "abc" --passout "abc" --algorithm "ecc" --curve "secp521r1" --name "Domain.com"
 #       generate --vars
 #       generate --wipe
 #       generate --clean
@@ -343,8 +346,8 @@ PATH_ROOTCA_SUB_CERTS=${PATH_CERTS}/${FOLDER_ROOTCA}/${FOLDER_ROOT_SUB_CERTS}   
 PATH_ROOTCA_BASE=${PATH_ROOTCA}/${FILE_ROOTCA_BASE}                                     # /home/USER/Desktop/ssh/certificates/rootCA/rootCA.*
 PATH_DOMAIN=${PATH_CERTS}/${FOLDER_DOMAIN}                                              # /home/USER/Desktop/ssh/certificates/domain
 PATH_DOMAIN_BASE=${PATH_DOMAIN}/${FILE_DOMAIN_BASE}                                     # /home/USER/Desktop/ssh/certificates/domain/domain.*
-PATH_AUTH=${PATH_CERTS}/${FOLDER_AUTH}                                              # /home/USER/Desktop/ssh/certificates/auth
-PATH_AUTH_BASE=${PATH_AUTH}/${FILE_AUTH_BASE}                                     # /home/USER/Desktop/ssh/certificates/auth/auth.*
+PATH_AUTH=${PATH_CERTS}/${FOLDER_AUTH}                                                  # /home/USER/Desktop/ssh/certificates/auth
+PATH_AUTH_BASE=${PATH_AUTH}/${FILE_AUTH_BASE}                                           # /home/USER/Desktop/ssh/certificates/auth/auth.*
 PATH_BITLOCKER=${PATH_CERTS}/${FOLDER_BITLOCKER}                                        # /home/USER/Desktop/ssh/certificates/bitlocker
 PATH_BITLOCKER_BASE=${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}                            # /home/USER/Desktop/ssh/certificates/bitlocker/bitlocker.*
 
@@ -960,14 +963,14 @@ opt_usage()
 # #
 
 while [ $# -gt 0 ]; do
-  case "$1" in
-    -P|--passwd|--pass|--password)
+    case "$1" in
+        -P|--passwd|--pass|--password)
             if [[ "$1" != *=* ]]; then shift; fi
             PWD_RAW="${1#*=}"
             PWD_STR=${PWD_RAW//?/*}
             ;;
 
-    -H|--homeFolder)
+        -H|--homeFolder)
             if [[ "$1" != *=* ]]; then shift; fi
             APP_DIR="${1#*=}"
             if [ -z "${FOLDER_CERTS}" ]; then
@@ -975,7 +978,7 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -C|--certsFolder)
+        -C|--certsFolder)
             if [[ "$1" != *=* ]]; then shift; fi
             FOLDER_CERTS="${1#*=}"
             if [ -z "${FOLDER_CERTS}" ]; then
@@ -987,7 +990,7 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -R|--rootcaFolder)
+        -R|--rootcaFolder)
             if [[ "$1" != *=* ]]; then shift; fi
             FOLDER_ROOTCA="${1#*=}"
             if [ -z "${FOLDER_ROOTCA}" ]; then
@@ -999,7 +1002,7 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -D|-do|--domainFolder)
+        -D|-do|--domainFolder)
             if [[ "$1" != *=* ]]; then shift; fi
             FOLDER_DOMAIN="${1#*=}"
             if [ -z "${FOLDER_DOMAIN}" ]; then
@@ -1011,7 +1014,7 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -N|--friendlyname|--name)
+        -N|--friendlyname|--name)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_FRIENDLY="${1#*=}"
             if [ -z "${PARAM_FRIENDLY}" ]; then
@@ -1024,19 +1027,19 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -n|--new|--newkey|--newkeys)
+        -n|--new|--newkey|--newkeys)
             BOOL_NEW_KEYS="true"
             echo -e "  ${FUCHSIA1}${BLINK}Generating New Keys${END}"
             echo -e
             ;;
 
-    -i|--import)
+        -i|--import)
             if [[ "$1" != *=* ]]; then shift; fi
             _PASS_IMPORT="true"
             PARAM_IMPORT_PATH="${1#*=}"
             ;;
 
-    -a|--algo|--algorithm)
+        -a|--algo|--algorithm)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_ALGORITHM="${1#*=}"
             if [ -z "${PARAM_ALGORITHM}" ]; then
@@ -1049,7 +1052,7 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -V|--curve)
+        -V|--curve)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_CURVE="${1#*=}"
             if [ -z "${PARAM_CURVE}" ]; then
@@ -1062,12 +1065,12 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -b|--bit|--bits)
+        -b|--bit|--bits)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_BITS="${1#*=}"
             ;;
 
-    -I|--passin)
+        -I|--passin)
             if [[ "$1" != *=* ]]; then shift; fi
             PWD_IN="${1#*=}"
             if [ -z "${PWD_IN}" ]; then
@@ -1081,7 +1084,7 @@ while [ $# -gt 0 ]; do
             PWD_STR=${PWD_IN//?/*}
             ;;
 
-    -O|--passout)
+        -O|--passout)
             if [[ "$1" != *=* ]]; then shift; fi
             PWD_OUT="${1#*=}"
             if [ -z "${PWD_OUT}" ]; then
@@ -1095,13 +1098,13 @@ while [ $# -gt 0 ]; do
             PWD_STR=${PWD_OUT//?/*}
             ;;
 
-    -x|--dev)
+        -x|--dev)
             BOOL_DEV_ENABLED="true"
             echo -e "  ${FUCHSIA1}${BLINK}Developer Mode Enabled${END}"
             echo -e
             ;;
 
-    -d|--expires|--days)
+        -d|--expires|--days)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_DAYS="${1#*=}"
             if [ -z "${PARAM_DAYS}" ]; then
@@ -1114,12 +1117,12 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-    -t|--comment)
+        -t|--comment)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_COMMENT="${1#*=}"
             ;;
 
-    -c|--clean)
+        -c|--clean)
 
             # #
             #   clean removes all files except for private keys used to generate original files
@@ -1143,7 +1146,7 @@ while [ $# -gt 0 ]; do
             exit 1
             ;;
 
-    -w|--wipe)
+        -w|--wipe)
 
             # #
             #   wipes all files from the generator, leaving you only the folders and the rootCA.cnf
@@ -1159,7 +1162,7 @@ while [ $# -gt 0 ]; do
             exit 1
             ;;
 
-    -v|--vars)
+        -v|--vars)
 
             # #
             #   wipes all files from the generator, leaving you only the folders and the rootCA.cnf
@@ -1245,15 +1248,15 @@ while [ $# -gt 0 ]; do
             exit 1
             ;;
 
-    -z*|--help*)
+        -z*|--help*)
             opt_usage
             ;;
 
-    -s|--status)
+        -s|--status)
             readStatus
             ;;
 
-    -v|--version)
+        -v|--version)
             echo
             echo -e "  ${GREEN}${BOLD}${APP_TITLE}${END} - v$(get_version)${END}"
             echo -e "  ${GREY3}${BOLD}${app_repo_url}${END}"
@@ -1261,11 +1264,11 @@ while [ $# -gt 0 ]; do
             echo
             exit 1
             ;;
-    *)
+        *)
             opt_usage
             ;;
-  esac
-  shift
+    esac
+    shift
 done
 
 # #
@@ -1658,7 +1661,7 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         openssl rsa -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
         if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\"
+            echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -passin \"pass:${PWD_IN}\" -passout \"pass:${PWD_OUT}\"
             echo -e
         fi
     fi
