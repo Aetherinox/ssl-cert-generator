@@ -276,20 +276,20 @@ x509_extensions                 = x509_domain
             [ x509_domain ]
             subjectKeyIdentifier            = hash
             basicConstraints                = CA:false, pathlen:0
-            # nsCertType                    = sslCA, objsign, objCA
+          # nsCertType                      = sslCA, objsign, objCA
             nsBaseUrl                       = "http://ssl.domain.local/"
             nsSslServerName                 = *.localhost
             nsCaPolicyUrl                   = "http://ssl.domain.local/policy.php"
-            nsRenewalUrl                    = ""
+            nsRenewalUrl                    = "http://ssl.domain.local/renewal.php"
             nsCaRevocationUrl               = "http://ssl.domain.local/rootCA.crl"
-            nsRevocationUrl                 = "http://ssl.domain.local/rootCA.crl"
+            nsRevocationUrl                 = "http://ssl.domain.local/domain.crl"
             nsComment                       = "*.domain.local Domain Certificate"
             issuerAltName                   = URI:https://ssl.domain.local/rootCA.crt
             subjectAltName                  = @sans
             keyUsage                        = critical, digitalSignature, keyEncipherment, keyAgreement
             extendedKeyUsage                = critical, serverAuth, clientAuth
             certificatePolicies             = @policies_domain_policy
-            crlDistributionPoints           = URI:http://ssl.domain.local/rootCA.crl,URI:http://ssl.domain.local/rootCA.crl.pem
+            crlDistributionPoints           = URI:http://ssl.domain.local/domain.crl,URI:http://ssl.domain.local/domain.crl.pem
             authorityInfoAccess             = OCSP;URI:http://ssl.domain.local/ocsp, caIssuers;URI:http://ssl.domain.local/rootCA.crt
 
 # #
@@ -342,14 +342,14 @@ x509_extensions                 = x509_9a_auth
             nsCaPolicyUrl                   = "http://ssl.domain.local/policy.php"
             nsRenewalUrl                    = "http://ssl.domain.local/renewal.php"
             nsCaRevocationUrl               = "http://ssl.domain.local/rootCA.crl"
-            nsRevocationUrl                 = "http://ssl.domain.local/rootCA.crl"
+            nsRevocationUrl                 = "http://ssl.domain.local/9a.crl"
             nsComment                       = "OrgName Authentication Certificate (9A)"
             issuerAltName                   = URI:https://ssl.domain.local/rootCA.crt
             subjectAltName                  = @sans
-            # keyUsage                      = critical, digitalSignature, keyEncipherment, keyAgreement
-            # extendedKeyUsage              = critical, serverAuth, clientAuth
+          # keyUsage                        = critical, digitalSignature, keyEncipherment, keyAgreement
+          # extendedKeyUsage                = critical, serverAuth, clientAuth
             certificatePolicies             = @policies_domain_policy
-            crlDistributionPoints           = URI:http://ssl.domain.local/rootCA.crl,URI:http://ssl.domain.local/rootCA.crl.pem
+            crlDistributionPoints           = URI:http://ssl.domain.local/9a.crl,URI:http://ssl.domain.local/9a.crl.pem
             authorityInfoAccess             = OCSP;URI:http://ssl.domain.local/ocsp, caIssuers;URI:http://ssl.domain.local/rootCA.crt
 
 # #
