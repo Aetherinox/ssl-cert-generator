@@ -1415,6 +1415,7 @@ if [ "${PARAM_MIXED}" == "false" ]; then
 else
     PARAM_CNF_ROOTCA="${FILE_ROOTCA_CNF}-rsa.${EXT_CNF}"
     PARAM_CNF_BITLOCKER="${FILE_BITLOCKER_CNF}-ecc.${EXT_CNF}"
+    PARAM_MD_SUB=sha384
 fi
 
 # #
