@@ -1,5 +1,5 @@
 # #
-#   OpenSSL Config > Root Certificate Authority
+#   OpenSSL Config > Root Certificate Authority > RSA
 #   
 #   should be used in combination with generate bash utility
 # #
@@ -161,25 +161,25 @@ x509_extensions                 = x509_rootCA
             0.organizationName_default      = Company Name
 
             organizationalUnitName          = Organizational Unit Name
-            organizationalUnitName_default  = Root Certificate Authority
+            organizationalUnitName_default  = OrgName Certificate Services
 
             commonName                      = Common Name
-            commonName_default              = Root Certificate Authority
+            commonName_default              = OrgName Root CA
 
             emailAddress                    = Email Address
             emailAddress_default            = system@domain.local
 
             description                     = Description (main purpose for the certificate)
-            description_default             = Organization Certificate Authority
+            description_default             = OrgName Certificate Authority RSA 4096
 
             givenName                       = Given Name
-            givenName_default               = Root Certificate Authority
+            givenName_default               = OrgName Root Certificate Authority
 
             title                           = Title
             title_default                   = Root Certificate Authority
 
             initials                        = Certificate Initials
-            initials                        = ocg-ssl-ca
+            initials                        = ocg-ssl-rootCA
 
             # #
             #   Root CA > Extensions
@@ -193,7 +193,7 @@ x509_extensions                 = x509_rootCA
             authorityKeyIdentifier          = keyid:always,issuer
             basicConstraints                = critical, CA:true
             keyUsage                        = critical, digitalSignature, cRLSign, keyCertSign
-            nsComment                       = "OrgName Root Certificate Authority"
+            nsComment                       = "OrgName Root Certificate Authority RSA 4096"
             issuerAltName                   = issuer:copy
 
 # #
@@ -343,7 +343,7 @@ x509_extensions                 = x509_9a_auth
             nsRenewalUrl                    = "http://ssl.domain.local/rsa/renewal.php"
             nsCaRevocationUrl               = "http://ssl.domain.local/rsa/rootCA.crl"
             nsRevocationUrl                 = "http://ssl.domain.local/rsa/9a.crl"
-            nsComment                       = "OrgName Authentication Certificate (9A)"
+            nsComment                       = "OrgName Authentication Certificate (9A) RSA 4096"
             issuerAltName                   = URI:https://ssl.domain.local/rsa/rootCA.crt
             subjectAltName                  = @sans
           # keyUsage                        = critical, digitalSignature, keyEncipherment, keyAgreement
@@ -375,7 +375,7 @@ subjectKeyIdentifier            = hash
 authorityKeyIdentifier          = keyid:always,issuer
 basicConstraints                = critical, CA:true, pathlen:0
 keyUsage                        = critical, digitalSignature, cRLSign, keyCertSign
-nsComment                       = "OrgName Intermediate CA"
+nsComment                       = "OrgName Intermediate CA RSA 4096"
 
 # #
 #   OCSP signing certificates

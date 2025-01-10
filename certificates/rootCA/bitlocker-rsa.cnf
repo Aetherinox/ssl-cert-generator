@@ -1,8 +1,8 @@
 # #
 #   OpenSSL Config > Bitlocker Encryption
 #
-#   SHOULD BE UTILIZED FOR BITLOCKER AND WINDOWS EFS ENCRYPTION.
-#   CAN BE LOADED INTO SLOT 9D ON A YUBIKEY.
+#   should be utilized for bitlocker and windows encrypted file system services.
+#   can be loaded into slot 9D on a yubikey
 # #
 
 oid_section                     = oids
@@ -121,7 +121,7 @@ default_days                    = 36500
 string_mask                     = MASK:0x2002
 utf8                            = yes
 # prompt                        = no
-serial                          = 001-ssl-ca
+serial                          = ocg-ssl-rootCA
 copy_extensions                 = copy
 distinguished_name              = dn_rootCA
 x509_extensions                 = x509_rootCA
@@ -146,25 +146,25 @@ x509_extensions                 = x509_rootCA
             0.organizationName_default      = Company Name
 
             organizationalUnitName          = Organizational Unit Name
-            organizationalUnitName_default  = Root Certificate Authority
+            organizationalUnitName_default  = OrgName Certificate Services
 
             commonName                      = Common Name
-            commonName_default              = Root Certificate Authority
+            commonName_default              = OrgName Root CA
 
             emailAddress                    = Email Address
             emailAddress_default            = system@domain.local
 
             description                     = Description (main purpose for the certificate)
-            description_default             = Organization Certificate Authority
+            description_default             = OrgName Certificate Authority RSA 4096
 
             givenName                       = Given Name
-            givenName_default               = Root Certificate Authority
+            givenName_default               = OrgName Root Certificate Authority
 
             title                           = Title
             title_default                   = Root Certificate Authority
 
             initials                        = Certificate Initials
-            initials_default                = 001-ssl-ca
+            initials                        = ocg-ssl-rootCA
 
             # #
             #   Root CA > Extensions
@@ -178,7 +178,7 @@ x509_extensions                 = x509_rootCA
             authorityKeyIdentifier          = keyid:always,issuer
             basicConstraints                = critical, CA:true
             keyUsage                        = critical, digitalSignature, cRLSign, keyCertSign
-            nsComment                       = "OrgName RootCA Certificate Authority"
+            nsComment                       = "OrgName Root Certificate Authority RSA 4096"
             issuerAltName                   = issuer:copy
 
 # #
@@ -268,7 +268,7 @@ x509_extensions                 = x509_bitlocker
             nsRenewalUrl                    = "http://ssl.domain.local/rsa/renewal.php"
             nsCaRevocationUrl               = "http://ssl.domain.local/rsa/rootCA.crl"
             nsRevocationUrl                 = "http://ssl.domain.local/rsa/9d.crl"
-            nsComment                       = "OrgName Encryption Certificate [9D]"
+            nsComment                       = "OrgName Encryption Certificate [9D] RSA 4096"
             issuerAltName                   = URI:https://ssl.domain.local/rsa/rootCA.crt
             subjectAltName                  = @sans
             keyUsage                        = critical,nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement
@@ -300,7 +300,7 @@ subjectKeyIdentifier            = hash
 authorityKeyIdentifier          = keyid:always,issuer
 basicConstraints                = critical, CA:true, pathlen:0
 keyUsage                        = critical, digitalSignature, cRLSign, keyCertSign
-nsComment                       = "OrgName Intermediate CA"
+nsComment                       = "OrgName Intermediate CA RSA 4096"
 
 # #
 #   OCSP signing certificates

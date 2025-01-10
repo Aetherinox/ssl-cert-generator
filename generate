@@ -323,6 +323,8 @@ FILE_BITLOCKER_BASE=9d
 FILE_ROOTCA_DB=certs
 FILE_ROOTCA_CRLNUMBER=crlnumber
 FILE_ROOTCA_SERIAL=serial
+FILE_ROOTCA_CNF=rootCA
+FILE_BITLOCKER_CNF=bitlocker
 
 # #
 #   Arg Tracking
@@ -380,11 +382,23 @@ EXT_OLD="old"
 EXT_ATTR="attr"
 
 # #
-#   CNF
+#   DEFINE > Options
 # #
 
-FILE_CNF_ROOTCA="rootCA"
-FILE_CNF_BITLOCKER="bitlocker"
+PARAM_COMMENT="${APP_TITLE} $(get_version)"
+PARAM_FRIENDLY="CompanyName"
+PARAM_ALGORITHM=rsa
+PARAM_ALGORITHM_SET=false
+PARAM_DAYS=36500
+PARAM_BITS=4096
+PARAM_CURVE=secp384r1
+PARAM_MD_ROOT=sha512
+PARAM_MD_SUB=sha384
+PARAM_MIXED=false
+PARAM_DEV_ENABLED=false
+PARAM_NEW_KEYS=false
+PARAM_CNF_ROOTCA="${FILE_ROOTCA_CNF}-rsa.${EXT_CNF}"
+PARAM_CNF_BITLOCKER="${FILE_BITLOCKER_CNF}-rsa.${EXT_CNF}"
 
 # #
 #   DEFINE > Key Name
@@ -405,22 +419,6 @@ SSL_CERT_FULLCHAIN="fullchain.${EXT_CRT}"
 SSL_KEYSTORE_PFX="keystore.normal.${EXT_PFX}"
 SSL_KEYSTORE_B64="keystore.base64.${EXT_PFX}"
 SSL_EXT_CRL_PEM="${EXT_CRL}.${EXT_PEM}"
-
-# #
-#   DEFINE > Options
-# #
-
-PARAM_COMMENT="${APP_TITLE} $(get_version)"
-PARAM_FRIENDLY="CompanyName"
-PARAM_ALGORITHM="rsa"
-PARAM_DAYS=36500
-PARAM_BITS=4096
-PARAM_CURVE=secp521r1
-PARAM_CNF_ROOTCA="${FILE_CNF_ROOTCA}.${EXT_CNF}"
-PARAM_CNF_BITLOCKER="${FILE_CNF_BITLOCKER}.${EXT_CNF}"
-PARAM_CNF="${PARAM_CNF_ROOTCA}"
-BOOL_DEV_ENABLED="false"
-BOOL_NEW_KEYS="false"
 
 # #
 #   func > version > compare greater than
@@ -452,13 +450,13 @@ readStatus()
     echo -e "  ${BLUE} 🎗️ SSL Config ${END}"
     echo -e " ${GREY1}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
 
-    if ( set +f; ls ${PATH_ROOTCA}/${FILE_CNF_ROOTCA}.*${EXT_CNF}* ) 1> /dev/null 2>&1; then
+    if ( set +f; ls ${PATH_ROOTCA}/${PARAM_CNF_ROOTCA} ) 1> /dev/null 2>&1; then
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END}" "✔️${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}${END}" "❌${END}"
     fi
 
-    if ( set +f; ls ${PATH_ROOTCA}/${FILE_CNF_BITLOCKER}.*${EXT_CNF}* ) 1> /dev/null 2>&1; then
+    if ( set +f; ls ${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER} ) 1> /dev/null 2>&1; then
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}${END}" "✔️${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}${END}" "❌${END}"
@@ -939,6 +937,17 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - c2tnb431r1${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - prime256v1${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-b,  --bits" "Bits to use${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "     --digest-root" "Message digest to use with the rootCA - default: ${PEACH}${PARAM_MD_ROOT}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA224${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA256${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA384${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA512${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "     --digest-sub" "Message digest to use with subkeys - default: ${PEACH}${PARAM_MD_SUB}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA224${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA256${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA384${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA512${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-M,  --mixed" "Toggles rootCA cert/key to be generated using ${PEACH}RSA ${PARAM_BITS}${END}, all subkeys will use ${PEACH}ECC ${PARAM_CURVE}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-N,  --friendlyname" "Friendly name to use for certificate${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-P,  --pass" "Password to use for certs and keys${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-I,  --passin" "Password in${END}" 1>&2
@@ -973,8 +982,8 @@ while [ $# -gt 0 ]; do
     case "$1" in
         -f|--config)
             if [[ "$1" != *=* ]]; then shift; fi
-            PARAM_CNF="${1#*=}"
-            if [ -z "${PARAM_CNF}" ]; then
+            PARAM_CNF_ROOTCA="${1#*=}"
+            if [ -z "${PARAM_CNF_ROOTCA}" ]; then
                 echo -e "  ${END}Must specify a valid OpenSSL .cnf config"
                 echo -e "  ${END}      Default:  ${YELLOW}${PARAM_CNF_ROOTCA}${END}"
                 echo -e
@@ -1047,7 +1056,7 @@ while [ $# -gt 0 ]; do
             ;;
 
         -n|--new|--newkey|--newkeys)
-            BOOL_NEW_KEYS="true"
+            PARAM_NEW_KEYS="true"
             echo -e "  ${FUCHSIA1}${BLINK}Generating New Keys${END}"
             echo -e
             ;;
@@ -1061,6 +1070,7 @@ while [ $# -gt 0 ]; do
         -a|--algo|--algorithm)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_ALGORITHM="${1#*=}"
+            PARAM_ALGORITHM_SET="true"
             if [ -z "${PARAM_ALGORITHM}" ]; then
                 echo -e "  ${END}Must specify a key algorithm: ${GREY2}ecc, rsa${END}"
                 echo -e "      ${BOLD}${GREY2}./${APP_THIS} --algorithm rsa${END}"
@@ -1069,11 +1079,20 @@ while [ $# -gt 0 ]; do
 
                 exit 1
             fi
+            ;;
 
-            if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
-                PARAM_CNF_ROOTCA="${FILE_CNF_ROOTCA}-ecc.${EXT_CNF}"
-                PARAM_CNF="${PARAM_CNF_ROOTCA}"
-            fi
+        --digest-root)
+            if [[ "$1" != *=* ]]; then shift; fi
+            PARAM_MD_ROOT="${1#*=}"
+            ;;
+
+        --digest-sub)
+            if [[ "$1" != *=* ]]; then shift; fi
+            PARAM_MD_SUB="${1#*=}"
+            ;;
+
+        -M|--mixed)
+            PARAM_MIXED="true"
             ;;
 
         -V|--curve)
@@ -1123,7 +1142,7 @@ while [ $# -gt 0 ]; do
             ;;
 
         -x|--dev)
-            BOOL_DEV_ENABLED="true"
+            PARAM_DEV_ENABLED="true"
             echo -e "  ${FUCHSIA1}${BLINK}Developer Mode Enabled${END}"
             echo -e
             ;;
@@ -1296,6 +1315,42 @@ while [ $# -gt 0 ]; do
     esac
     shift
 done
+
+# #
+#   Set CNF file only if --mixed not specified
+# #
+
+if [ "${PARAM_MIXED}" == "false" ]; then
+    if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+        PARAM_CNF_ROOTCA="${FILE_ROOTCA_CNF}-ecc.${EXT_CNF}"
+        PARAM_CNF_BITLOCKER="${FILE_BITLOCKER_CNF}-ecc.${EXT_CNF}"
+    fi
+else
+    PARAM_CNF_ROOTCA="${FILE_ROOTCA_CNF}-rsa.${EXT_CNF}"
+fi
+
+# #
+#   Check if MIXEd and ALGORITHM both specified
+#   Since these two settings are incompatible, throw error and exit
+# #
+
+if [ "${PARAM_ALGORITHM_SET}" == "true" ] && [ "${PARAM_MIXED}" == "true" ]; then
+    echo
+    echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+    echo -e
+    echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}Incompatible Settings${END}"
+    echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎You specified two parameters which are incompatible with each other.${END}"
+    echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎You cannot specify both ${BLUE2}-a, --algorithm${END} and ${BLUE2}-M, --mixed${END} in your command.${END}"
+    echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎Must drop one or the other.${END}"
+    echo -e
+    echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎${BLUE2}-a, --algorithm${END} forces both your rootCA and sub keys to be generated using a specific algorithm${END}"
+    echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎${BLUE2}-M, --mixed${END} forces your rootCA certificate to be generated using RSA 4096; and sub keys will use ECC${END}"
+    echo -e
+    echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+    echo
+
+    exit 1
+fi
 
 # #
 #   Check if OpenSSL installed
@@ -1471,7 +1526,7 @@ fi
 #   command again with `--new` appended.
 # #
 
-if [ -z "${BOOL_NEW_KEYS}" ] || [ "${BOOL_NEW_KEYS}" == "false" ]; then
+if [ -z "${PARAM_NEW_KEYS}" ] || [ "${PARAM_NEW_KEYS}" == "false" ]; then
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
         printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Core-007${END}" "${GREY3}${LNG_STEP_CHECK_INTEGRITY}${END}" "${RED}›${END}" "${GREEN}Found ${GREY3}private key${END}"
     else
@@ -1652,12 +1707,13 @@ fi
 
 # #
 #   rootCA > Create > RSA           rootCA.key.main-01.enc.priv.pem
+#   @search                         create-rsa-ecc
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-009${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_ROOTCA_BASE}${BLUE2} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
@@ -1665,7 +1721,7 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         # openssl genrsa -aes256 -passout "pass:${PWD_OUT}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" ${PARAM_BITS}
         openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -pass "pass:${PWD_RAW}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -pass \"pass:${PWD_RAW}\"
             echo -e
         fi
@@ -1674,19 +1730,20 @@ fi
 
 # #
 #   rootCA > Create > RSA           rootCA.key.main-01.unc.priv.pem
+#   @search                         create-unc-rsa
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}"
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_ROOTCA_BASE}${BLUE2} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
     else
-        openssl rsa -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
+        openssl rsa -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -passin \"pass:${PWD_IN}\" -passout \"pass:${PWD_OUT}\"
             echo -e
         fi
@@ -1696,53 +1753,57 @@ fi
 # #
 #   rootCA > Create > ECC           rootCA.key.main-01.enc.priv.pem
 #                                   rootCA.key.main-01.unc.priv.pem
+#   @search                         create-enc-ecc
+#   @search                         create-unc-ecc
 # #
 
-if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-011${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}"
-    # file already exists
-    if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_ROOTCA_BASE}${BLUE2} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
-            echo -e
-        fi
-    else
-        openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}"
+if [ "${PARAM_MIXED}" == "false" ]; then
+    if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-011${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}"
+        # file already exists
+        if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
+            if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+                echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_ROOTCA_BASE}${BLUE2} private key ${YELLOW3}${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
+                echo -e
+            fi
+        else
+            openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}"
 
-        if [ -z "${PWD_IN}" ]; then
-            echo
-            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
-            echo -e
-            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passin Not Provided${END}"
-            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passin "PASSWORD"${WHITE}${END}"
-            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
-            echo -e
-            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
-            echo
+            if [ -z "${PWD_IN}" ]; then
+                echo
+                echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+                echo -e
+                echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passin Not Provided${END}"
+                echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passin "PASSWORD"${WHITE}${END}"
+                echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+                echo -e
+                echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+                echo
 
-            exit 1
-        fi
+                exit 1
+            fi
 
-        if [ -z "${PWD_OUT}" ]; then
-            echo
-            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
-            echo -e
-            echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passout Not Provided${END}"
-            echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passout "PASSWORD"${WHITE}${END}"
-            echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
-            echo -e
-            echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
-            echo
+            if [ -z "${PWD_OUT}" ]; then
+                echo
+                echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+                echo -e
+                echo -e "  ${BOLD}${ORANGE}WARNING ‎ ‎‎ ‎ ‎ ‎ ‎ ‎${WHITE}--passout Not Provided${END}"
+                echo -e "  ${WHITE}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎To create an ECC password protected key, you must append ${BLUE}--passout "PASSWORD"${WHITE}${END}"
+                echo -e "  ${BOLD}${GREY2}‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎‎ ‎ ‎ ‎‎ ‎ ‎ ‎ ‎ ‎ ‎ ‎${APP_THIS} --new --algorithm \"ecc\" --passin \"YOUR_PASSWORD\" --passout \"YOUR_PASSWORD\"${END}"
+                echo -e
+                echo -e "  ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
+                echo
 
-            exit 1
-        fi
+                exit 1
+            fi
 
-        openssl ec -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
+            openssl ec -in "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-            echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
-            echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
-            echo -e
+            if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+                echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
+                echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
+                echo -e
+            fi
         fi
     fi
 fi
@@ -1752,10 +1813,10 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${EXT_CRT}${END}"
-openssl req -config "${PATH_ROOTCA}/${PARAM_CNF}" -key "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out "${PATH_ROOTCA_BASE}.${EXT_CRT}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -key "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -new -x509 -days ${PARAM_DAYS} -${PARAM_MD_ROOT} -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out "${PATH_ROOTCA_BASE}.${EXT_CRT}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -key \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -new -x509 -days ${PARAM_DAYS} -sha512 -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch${END}
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl req -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -key \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -new -x509 -days ${PARAM_DAYS} -${PARAM_MD_ROOT} -section ${SECTION_ROOT} -extensions ${EXTENSION_ROOT} -out \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch${END}
     echo -e
 fi
 
@@ -1771,50 +1832,53 @@ fi
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_BASE}.${EXT_PFX}${END}"
 openssl pkcs12 -export -name "${PARAM_FRIENDLY} Certificate Authority" -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -inkey "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_ROOTCA_BASE}.${EXT_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Certificate Authority\" -in \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -inkey \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_ROOTCA_BASE}.${EXT_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
 # #
-#   rootCA > Create > crl/rootCA.crl.pem
+#   rootCA > Create                 crl/rootCA.crl.pem
+#   @search                         create-crl-pem
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
 # #
-#   rootCA > Create > crl/rootCA.crl
+#   rootCA > Create                 crl/rootCA.crl
+#   @search                         create-crl
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-015${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}${END}"
 openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
 # #
 #   Domain > Create > RSA           domain.key.main-01.enc.priv.pem
+#   @search                         create-enc-rsa
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-001${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_DOMAIN_BASE}${BLUE2} private key ${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${GREEN}, key already exists from previous generation${END}
             echo -e
         fi
     else
         openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -pass "pass:${PWD_RAW}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -pass \"pass:${PWD_RAW}\"
             echo -e
         fi
@@ -1823,19 +1887,20 @@ fi
 
 # #
 #   Domain > Create > RSA           domain.key.main-01.unc.priv.pem
+#   @search                         create-unc-rsa
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-002${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${END}"
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_DOMAIN_BASE}${BLUE2} private key ${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${GREEN}, key already exists from previous generation${END}
             echo -e
         fi
     else
         openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}\" -passin \"pass:${PWD_IN}\" -passout \"pass:${PWD_OUT}\"
             echo -e
         fi
@@ -1844,13 +1909,14 @@ fi
 
 # #
 #   Domain > Create > ECC           domain.key.main-01.enc.priv.pem
+#   @search                         create-enc-ecc
 # #
 
-if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-001${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     # file already exists
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_DOMAIN_BASE}${BLUE2} private key ${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
@@ -1887,7 +1953,7 @@ if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "$
 
         openssl ec -in "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
             echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
             echo -e
@@ -1896,19 +1962,21 @@ if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "$
 fi
 
 # #
-#   Domain > Create > domain.csr
+#   Domain > Create                 domain.csr
+#   @search                         create-csr
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF}" -section ${SECTION_DOMAIN} -out "${PATH_DOMAIN_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -${PARAM_MD_SUB} -new -key "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -section ${SECTION_DOMAIN} -out "${PATH_DOMAIN_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -section ${SECTION_DOMAIN} -out \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl req -${PARAM_MD_SUB} -new -key \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -section ${SECTION_DOMAIN} -out \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
     echo -e
 fi
 
 # #
-#   Domain > Create > domain.crt
+#   Domain > Create                 domain.crt
+#   @search                         register-crt
 #
 #   creates certificate, registers the cert within the rootCA certs.db.
 #   you must remove the certificate from the certs.db to run this again.
@@ -1918,15 +1986,16 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_DOMAIN_BASE}.${EXT_CSR}" -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
+openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md ${PARAM_MD_SUB} -in "${PATH_DOMAIN_BASE}.${EXT_CSR}" -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_DOMAIN} -days ${PARAM_DAYS} -notext -md ${PARAM_MD_SUB} -in \"${PATH_DOMAIN_BASE}.${EXT_CSR}\" -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
 # #
-#   Domain > Create > domain.keystore.normal.pfx
+#   Domain > Create                 domain.keystore.normal.pfx
+#   @search                         create-pfx-normal
 #
 #   rootCA -name should use "CompanyName Certificate Authority"
 #   domain -name should use "CompanyName Domain Authority"
@@ -1937,45 +2006,48 @@ fi
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}"
 openssl pkcs12 -export -name "${PARAM_FRIENDLY} Domain Authority" -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -inkey "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Domain Authority\" -in \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -inkey \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
 # #
-#   Domain > Create > domain.crt
+#   Domain > Create                 domain.crt
+#   @search                         create-crt
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${EXT_CRT}${END}"
 openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out "${PATH_DOMAIN_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
-    echo -e
 fi
 
 # #
-#   Domain > Remove > domain.keystore.base64.pfx
+#   Domain > Remove                 domain.keystore.base64.pfx
+#   @search                         remove-pfx-base64
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_REMOVE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}"
 if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}" ]; then
     rm "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  rm \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}\"
     fi
 fi
 
 # #
-#   Domain > Create > domain.keystore.base64.pfx
+#   Domain > Create                 domain.keystore.base64.pfx
+#   @search                         create-pfx-base64
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}"
 cat "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}"
 
 # #
-#   Domain > Create > domain.keystore.p12
+#   Domain > Create                 domain.keystore.p12
+#   @search                         create-p12
 #
 #   @note       : p12 file is the same keystore as pfx.
 # #
@@ -1984,96 +2056,109 @@ cat "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_DOMAIN_BASE}.${
 #   printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Domain${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_P12}${END}"
 #   openssl pkcs12 -export -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -inkey "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_P12}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 # 
-#   if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+#   if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
 #       echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -in \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -inkey \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_P12}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
 #       echo -e
 #   fi
 # #
 
 # #
-#   Domain > Create > domain.keycert.main-01.enc.priv.pem
+#   Domain > Create                 domain.keycert.main-01.enc.priv.pem
+#   @search                         create-keycert-enc-main-01
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-009${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}${END}"
 openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -aes-256-cbc -out "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -aes-256-cbc -out \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Domain > Create > domain.keycert.main-01.unc.priv.pem
+#   Domain > Create                 domain.keycert.main-01.unc.priv.pem
+#   @search                         create-keycert-unc-main-01
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}${END}"
 openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nodes -out "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -nodes -out \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
 # #
-#   Domain > Create > domain.key.main-02.enc.priv.pem
+#   Domain > Create                 domain.key.main-02.enc.priv.pem
+#   @search                         create-key-enc-main-02
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-011${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}${END}"
 openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Domain > Create > domain.key.main-02.unc.priv.pem
+#   Domain > Create                 domain.key.main-02.unc.priv.pem
+#   @search                         create-key-unc-main-02
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}"
 openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -nodes -out "${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -nodes -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Assign OpenSSH File
+#   Domain                          Assign OpenSSH Private File
+#   @search                         assign-openssh-priv
+#
+#   ECC keys do not have RSA.
+#
+#   To generate the public OpenSSH key for RSA, we use the OpenSSH private key.
+#   Since ECC can't generate an OpenSSH private key from RSA, we need to tell the script which file to use to generate our ECC OpenSSH public key
 # #
 
-if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
     SSL_KEY_RSA_PRIV="${SSL_KEY_MAIN_UNC}"
 fi
 
 # #
-#   RSA Keys
+#   Domain                          RSA Keys
+#   @search                         create-keys-rsa
 #
 #   RSA keys get extra RSA keys/certs
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 
     # #
-    #   Domain > Create > domain.key.rsa.priv.pem
+    #   Domain                          Create > domain.key.rsa.priv.pem
+    #   @search                         create-keys-rsa-priv-pem
     # #
 
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}"
     openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -out "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" -outform PEM -traditional -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -out \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" -outform PEM -traditional -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
         echo -e
     fi
 
     # #
-    #   Domain > Create > domain.key.rsa.pub.pem
+    #   Domain                          Create > domain.key.rsa.pub.pem
+    #   @search                         create-keys-rsa-pub-pem
     # #
 
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}"
     openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
         echo -e
     fi
@@ -2081,9 +2166,10 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 fi
 
 # #
-#   Domain > Create > domain.key.openssh.priv.pem
-#   also known as id_rsa
+#   Domain                          Create > domain.key.openssh.priv.pem
+#   @search                         create-keys-openssh-priv-pem
 #
+#   also known as id_rsa
 #   password must be at least five characters
 # #
 
@@ -2099,7 +2185,7 @@ if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
 
         chmod 600 "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
             echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"
             if [ -n "$PARAM_COMMENT" ]; then
@@ -2118,7 +2204,9 @@ else
 fi
 
 # #
-#   Domain > Create > domain.key.openssh.priv.nopwd.pem
+#   Domain                          Create > domain.key.openssh.priv.nopwd.pem
+#   @search                         create-keys-openssh-priv-nopwd-pem
+#
 #   also known as id_rsa
 # #
 
@@ -2133,7 +2221,7 @@ if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
 
     chmod 600 "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
         echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
         if [ -n "$PARAM_COMMENT" ]; then
@@ -2148,7 +2236,9 @@ else
 fi
 
 # #
-#   Domain > Create > domain.key.openssh.pub
+#   Domain                          Create > domain.key.openssh.pub
+#   @search                         create-keys-openssh-pub-pem
+#
 #   also known as id_rsa.pub
 #   
 #   -y      Read a private OpenSSH format file and print an OpenSSH public key to stdout. 
@@ -2161,7 +2251,7 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-017${END}" "${
 if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
     ssh-keygen -P "${PWD_RAW}" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}\"
         echo -e
     fi
@@ -2171,31 +2261,34 @@ else
 fi
 
 # #
-#   Domain > Create > crl/domain.crl.pem
+#   Domain > Create                 crl/domain.crl.pem
+#   @search                         create-crl-pem
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
 # #
-#   Domain > Create > crl/domain.crl
+#   Domain > Create                 crl/domain.crl
+#   @search                         create-crl
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}${END}"
 openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_DOMAIN_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
 # #
-#   Domain > domain.Fullchain.pem
+#   Domain                          domain.Fullchain.pem
+#   @search                         create-fullchain
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-020${END}" "${GREY3}${LNG_STEP_CHAIN_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN}/${SSL_CERT_FULLCHAIN}${END}"
@@ -2203,27 +2296,28 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-020${END}" "${
 cat "${PATH_DOMAIN_BASE}.${EXT_CRT}" >> "${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}"
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  cat ${PATH_DOMAIN_BASE}.${EXT_CRT} \>\> ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}
     echo ‎ ‎${GREY2} ↳  cat ${PATH_ROOTCA_BASE}.${EXT_CRT} \>\> ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}
     echo -e
 fi
 
 # #
-#   Authentication > Create > RSA           9a.key.main-01.enc.priv.pem
+#   Authentication > Create > RSA   9a.key.main-01.enc.priv.pem
+#   @search                         create-enc-rsa
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-001${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     if ( set +f; ls ${PATH_AUTH_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_AUTH_BASE}${BLUE2} private key ${YELLOW3}${FILE_AUTH_BASE}.${SSL_KEY_MAIN_ENC}${GREEN}, key already exists from previous generation${END}
             echo -e
         fi
     else
         openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -pass "pass:${PWD_RAW}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -pass \"pass:${PWD_RAW}\"
             echo -e
         fi
@@ -2231,20 +2325,21 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 fi
 
 # #
-#   Authentication > Create > RSA           9a.key.main-01.unc.priv.pem
+#   Authentication > Create > RSA   9a.key.main-01.unc.priv.pem
+#   @search                         create-unc-rsa
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-002${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}${END}"
     if ( set +f; ls ${PATH_AUTH_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_AUTH_BASE}${BLUE2} private key ${YELLOW3}${FILE_AUTH_BASE}.${SSL_KEY_MAIN_UNC}${GREEN}, key already exists from previous generation${END}
             echo -e
         fi
     else
         openssl rsa -in "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}\" -passin \"pass:${PWD_IN}\" -passout \"pass:${PWD_OUT}\"
             echo -e
         fi
@@ -2252,14 +2347,15 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 fi
 
 # #
-#   Authentication > Create > ECC           domain.key.main-01.enc.priv.pem
+#   Authentication > Create > ECC   domain.key.main-01.enc.priv.pem
+#   @search                         create-enc-ecc
 # #
 
-if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-001${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     # file already exists
     if ( set +f; ls ${PATH_AUTH_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_AUTH_BASE}${BLUE2} private key ${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
@@ -2296,7 +2392,7 @@ if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "$
 
         openssl ec -in "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
             echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
             echo -e
@@ -2305,19 +2401,21 @@ if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "$
 fi
 
 # #
-#   Authentication > Create > 9a.csr
+#   Authentication > Create         9a.csr
+#   @search                         create-csr
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF}" -section ${SECTION_AUTH} -out "${PATH_AUTH_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -${PARAM_MD_SUB} -new -key "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -section ${SECTION_AUTH} -out "${PATH_AUTH_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -section ${SECTION_AUTH} -out \"${PATH_AUTH_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl req -${PARAM_MD_SUB} -new -key \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -section ${SECTION_AUTH} -out \"${PATH_AUTH_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
     echo -e
 fi
 
 # #
-#   Authentication > Create > 9a.crt
+#   Authentication > Create         9a.crt
+#   @search                         register-crt
 #
 #   creates certificate, registers the cert within the rootCA certs.db.
 #   you must remove the certificate from the certs.db to run this again.
@@ -2327,15 +2425,16 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_AUTH_BASE}.${EXT_CSR}" -out "${PATH_AUTH_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
+openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md ${PARAM_MD_SUB} -in "${PATH_AUTH_BASE}.${EXT_CSR}" -out "${PATH_AUTH_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_AUTH_BASE}.${EXT_CSR}\" -out \"${PATH_AUTH_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_AUTH} -days ${PARAM_DAYS} -notext -md ${PARAM_MD_SUB} -in \"${PATH_AUTH_BASE}.${EXT_CSR}\" -out \"${PATH_AUTH_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
 # #
-#   Authentication > Create > 9a.keystore.normal.pfx
+#   Authentication > Create         9a.keystore.normal.pfx
+#   @search                         create-pfx-normal
 #
 #   rootCA -name should use "CompanyName Certificate Authority"
 #   domain -name should use "CompanyName Domain Authority"
@@ -2346,44 +2445,48 @@ fi
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}${END}"
 openssl pkcs12 -export -name "${PARAM_FRIENDLY} Authentication Authority" -in "${PATH_AUTH_BASE}.${EXT_CRT}" -inkey "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Authentication Authority\" -in \"${PATH_AUTH_BASE}.${EXT_CRT}\" -inkey \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
 # #
-#   Authentication > Create > 9a.crt
+#   Authentication > Create         9a.crt
+#   @search                         create-crt
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${EXT_CRT}${END}"
 openssl pkcs12 -in "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out "${PATH_AUTH_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_AUTH_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
 fi
 
 # #
-#   Authentication > Remove > 9a.keystore.base64.pfx
+#   Authentication > Remove         9a.keystore.base64.pfx
+#   @search                         remove-pfx-base64
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_REMOVE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}${END}"
 if [ -f "${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}" ]; then
     rm "${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  rm \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}\"
     fi
 fi
 
 # #
-#   Authentication > Create > 9a.keystore.base64.pfx
+#   Authentication > Create         9a.keystore.base64.pfx
+#   @search                         create-pfx-base64
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}${END}"
 cat "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}"
 
 # #
-#   Authentication > Create > 9a.keystore.p12
+#   Authentication > Create         9a.keystore.p12
+#   @search                         create-p12
 #
 #   @note       : p12 file is the same keystore as pfx.
 # #
@@ -2392,96 +2495,109 @@ cat "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_AUTH_BASE}.${SSL_
 #   printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Domain${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEYSTORE_P12}${END}"
 #   openssl pkcs12 -export -in "${PATH_AUTH_BASE}.${EXT_CRT}" -inkey "${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_AUTH_BASE}.${SSL_KEYSTORE_P12}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 # 
-#   if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+#   if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
 #       echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -in \"${PATH_AUTH_BASE}.${EXT_CRT}\" -inkey \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_P12}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
 #       echo -e
 #   fi
 # #
 
 # #
-#   Authentication > Create > 9a.keycert.main-01.enc.priv.pem
+#   Authentication > Create         9a.keycert.main-01.enc.priv.pem
+#   @search                         create-keycert-enc-main-01
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-009${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}${END}"
 openssl pkcs12 -in "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" -aes-256-cbc -out "${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" -aes-256-cbc -out \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Authentication > Create > 9a.keycert.main-01.unc.priv.pem
+#   Authentication > Create         9a.keycert.main-01.unc.priv.pem
+#   @search                         create-keycert-unc-main-01
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_CERT_MAIN_UNC}${END}"
 openssl pkcs12 -in "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" -nodes -out "${PATH_AUTH_BASE}.${SSL_CERT_MAIN_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" -nodes -out \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
 # #
-#   Authentication > Create > 9a.key.main-02.enc.priv.pem
+#   Authentication > Create         9a.key.main-02.enc.priv.pem
+#   @search                         create-key-enc-main-02
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-011${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_MAIN02_ENC}${END}"
 openssl pkcs12 -in "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -out "${PATH_AUTH_BASE}.${SSL_KEY_MAIN02_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN02_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Authentication > Create > 9a.key.main-02.unc.priv.pem
+#   Authentication > Create         9a.key.main-02.unc.priv.pem
+#   @search                         create-key-unc-main-02
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_MAIN02_UNC}${END}"
 openssl pkcs12 -in "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -nodes -out "${PATH_AUTH_BASE}.${SSL_KEY_MAIN02_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -nodes -out \"${PATH_AUTH_BASE}.${SSL_KEY_MAIN02_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Assign OpenSSH File
+#   Authentication                  Assign OpenSSH Private File
+#   @search                         assign-openssh-priv
+#
+#   ECC keys do not have RSA.
+#
+#   To generate the public OpenSSH key for RSA, we use the OpenSSH private key.
+#   Since ECC can't generate an OpenSSH private key from RSA, we need to tell the script which file to use to generate our ECC OpenSSH public key
 # #
 
-if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
     SSL_KEY_RSA_PRIV="${SSL_KEY_MAIN_UNC}"
 fi
 
 # #
-#   RSA Keys
+#   Authentication                  RSA Keys
+#   @search                         create-keys-rsa
 #
 #   RSA keys get extra RSA keys/certs
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 
     # #
-    #   Authentication > Create > 9a.key.rsa.priv.pem
+    #   Authentication                  Create > 9a.key.rsa.priv.pem
+    #   @search                         create-keys-rsa-priv-pem
     # #
 
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}${END}"
     openssl rsa -in "${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}" -out "${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}" -outform PEM -traditional -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}\" -out \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}\" -outform PEM -traditional -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
         echo -e
     fi
 
     # #
-    #   Authentication > Create > 9a.key.rsa.pub.pem
+    #   Authentication                  Create > 9a.key.rsa.pub.pem
+    #   @search                         create-keys-rsa-pub-pem
     # #
 
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}${END}"
     openssl rsa -in "${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}\" -passin "pass:${PWD_IN}" -passout pass:\"${PWD_OUT}\"
         echo -e
     fi
@@ -2489,9 +2605,10 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 fi
 
 # #
-#   Authentication > Create > 9a.key.openssh.priv.pem
-#   also known as id_rsa
+#   Authentication                  Create > 9a.key.openssh.priv.pem
+#   @search                         create-keys-openssh-priv-pem
 #
+#   also known as id_rsa
 #   password must be at least five characters
 # #
 
@@ -2507,7 +2624,7 @@ if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
 
         chmod 600 "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  cp \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV}\"
             echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV}\"
             if [ -n "$PARAM_COMMENT" ]; then
@@ -2526,7 +2643,9 @@ else
 fi
 
 # #
-#   Authentication > Create > 9a.key.openssh.priv.nopwd.pem
+#   Authentication                  Create > 9a.key.openssh.priv.nopwd.pem
+#   @search                         create-keys-openssh-priv-nopwd-pem
+#
 #   also known as id_rsa
 # #
 
@@ -2541,7 +2660,7 @@ if [ -f "${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
 
     chmod 600 "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  cp \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
         echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -N \"\" -f \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
         if [ -n "$PARAM_COMMENT" ]; then
@@ -2556,7 +2675,9 @@ else
 fi
 
 # #
-#   Authentication > Create > 9a.key.openssh.pub
+#   Authentication                  Create > 9a.key.openssh.pub
+#   @search                         create-keys-openssh-pub-pem
+#
 #   also known as id_rsa.pub
 #   
 #   -y      Read a private OpenSSH format file and print an OpenSSH public key to stdout. 
@@ -2569,7 +2690,7 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-017${END}" "${GR
 if [ -f "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
     ssh-keygen -P "${PWD_RAW}" -f "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PUB}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PUB}\"
         echo -e
     fi
@@ -2579,31 +2700,34 @@ else
 fi
 
 # #
-#   Authentication > Create > crl/auth.crl.pem
+#   Authentication > Create         crl/auth.crl.pem
+#   @search                         create-crl-pem
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
 # #
-#   Authentication > Create > crl/auth.crl
+#   Authentication > Create         crl/auth.crl
+#   @search                         create-crl
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}${END}"
 openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_AUTH_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
 # #
-#   Authentication > 9a.Fullchain.pem
+#   Authentication                  9a.Fullchain.pem
+#   @search                         create-fullchain
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-020${END}" "${GREY3}${LNG_STEP_CHAIN_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH}/${SSL_CERT_FULLCHAIN}${END}"
@@ -2611,31 +2735,28 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-020${END}" "${GR
 cat "${PATH_AUTH_BASE}.${EXT_CRT}" >> "${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}"
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  cat ${PATH_AUTH_BASE}.${EXT_CRT} \>\> ${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}
     echo ‎ ‎${GREY2} ↳  cat ${PATH_ROOTCA_BASE}.${EXT_CRT} \>\> ${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}
     echo -e
 fi
 
 # #
-#   Bitlocker Encryption
+#   Bitlocker > Create > RSA        bitlocker.key.main-01.enc.priv.pem
+#   @search                         create-enc-rsa
 # #
 
-# #
-#   Bitlocker > Create > RSA           bitlocker.key.main-01.enc.priv.pem
-# #
-
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-001${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     if ( set +f; ls ${PATH_BITLOCKER_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_BITLOCKER_BASE}${BLUE2} private key ${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}${GREEN}, key already exists from previous generation${END}
             echo -e
         fi
     else
         openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -pass "pass:${PWD_RAW}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl genpkey -aes256 -algorithm RSA -pkeyopt rsa_keygen_bits:${PARAM_BITS} -out \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -pass \"pass:${PWD_RAW}\"
             echo -e
         fi
@@ -2643,20 +2764,21 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 fi
 
 # #
-#   Bitlocker > Create > RSA           bitlocker.key.main-01.unc.priv.pem
+#   Bitlocker > Create > RSA        bitlocker.key.main-01.unc.priv.pem
+#   @search                         create-unc-rsa
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-002${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_UNC}${END}"
     if ( set +f; ls ${PATH_BITLOCKER_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_BITLOCKER_BASE}${BLUE2} private key ${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_UNC}${GREEN}, key already exists from previous generation${END}
             echo -e
         fi
     else
         openssl rsa -in "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}"  -out "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_UNC}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\"  -out \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_UNC}\" -passin \"pass:${PWD_IN}\" -passout \"pass:${PWD_OUT}\"
             echo -e
         fi
@@ -2664,14 +2786,15 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 fi
 
 # #
-#   Bitlocker > Create > ECC           bitlocker.key.main-01.enc.priv.pem
+#   Bitlocker > Create > ECC        bitlocker.key.main-01.enc.priv.pem
+#   @search                         create-enc-ecc
 # #
 
-if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-001${END}" "${GREY3}Generate Keys${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}${END}"
     # file already exists
     if ( set +f; ls ${PATH_BITLOCKER_BASE}.*${SSL_KEY_MAIN_ENC}* ) 1> /dev/null 2>&1; then
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${BLUE2} ↳ ⚠️ ‎ ‎  Skipped generating ${YELLOW3}${FILE_BITLOCKER_BASE}${BLUE2} private key ${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}${BLUE2}, key already exists from previous generation${END}
             echo -e
         fi
@@ -2708,7 +2831,7 @@ if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "$
 
         openssl ec -in "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_UNC}" -out "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -aes256 -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  openssl ecparam -genkey -name ${PARAM_CURVE} -noout -out \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_UNC}\"${END}
             echo ‎ ‎${GREY2} ↳  openssl ec -in \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_UNC}\" -out \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -aes256 -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\"${END}
             echo -e
@@ -2717,19 +2840,21 @@ if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "$
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.csr
+#   Bitlocker > Create              bitlocker.csr
+#   @search                         create-csr
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-003${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${EXT_CSR}${END}"
-openssl req -sha512 -new -key "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}" -section ${SECTION_BITLOCKER} -out "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
+openssl req -${PARAM_MD_SUB} -new -key "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -config "${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}" -section ${SECTION_BITLOCKER} -out "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -passout "pass:${PWD_OUT}" -passin "pass:${PWD_IN}" --batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl req -sha512 -new -key \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}\" -section ${SECTION_BITLOCKER} -out \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl req -${PARAM_MD_SUB} -new -key \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -config \"${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}\" -section ${SECTION_BITLOCKER} -out \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -passout pass:\"${PWD_OUT}\" -passin pass:\"${PWD_IN}\" --batch
     echo -e
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.crt
+#   Bitlocker > Create              bitlocker.crt
+#   @search                         register-crt
 #
 #   creates certificate, registers the cert within the rootCA certs.db.
 #   you must remove the certificate from the certs.db to run this again.
@@ -2739,15 +2864,16 @@ fi
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-004${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${EXT_CRT}${END}"
-openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md sha512 -in "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -out "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
+openssl ca -config "${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md ${PARAM_MD_SUB} -in "${PATH_BITLOCKER_BASE}.${EXT_CSR}" -out "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -batch 1> /dev/null 2>&1
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md sha512 -in \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -out \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl ca -config \"${PATH_ROOTCA}/${PARAM_CNF_BITLOCKER}\" -multivalue-rdn -preserveDN -extensions ${EXTENSION_BITLOCKER} -days ${PARAM_DAYS} -notext -md ${PARAM_MD_SUB} -in \"${PATH_BITLOCKER_BASE}.${EXT_CSR}\" -out \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.keystore.normal.pfx
+#   Bitlocker > Create              bitlocker.keystore.normal.pfx
+#   @search                         create-pfx-normal
 #
 #   rootCA -name should use "CompanyName Certificate Authority"
 #   domain -name should use "CompanyName Domain Authority"
@@ -2758,45 +2884,48 @@ fi
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-005${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}${END}"
 openssl pkcs12 -export -name "${PARAM_FRIENDLY} Encryption Authority" -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -inkey "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -name \"${PARAM_FRIENDLY} Encryption Authority\" -in \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -inkey \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.crt
+#   Bitlocker > Create              bitlocker.crt
+#   @search                         create-crt
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-006${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${EXT_CRT}${END}"
 openssl pkcs12 -in "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
-    echo -e
 fi
 
 # #
-#   Bitlocker > Remove > bitlocker.keystore.base64.pfx
+#   Bitlocker > Remove              bitlocker.keystore.base64.pfx
+#   @search                         remove-pfx-base64
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-007${END}" "${GREY3}${LNG_STEP_FILE_REMOVE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}${END}"
 if [ -f "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}" ]; then
     rm "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  rm \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}\"
     fi
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.keystore.base64.pfx
+#   Bitlocker > Create              bitlocker.keystore.base64.pfx
+#   @search                         create-pfx-base64
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}${END}"
 cat "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}"
 
 # #
-#   Bitlocker > Create > bitlocker.keystore.p12
+#   Bitlocker > Create              bitlocker.keystore.p12
+#   @search                         create-p12
 #
 #   @note       : p12 file is the same keystore as pfx.
 # #
@@ -2805,96 +2934,109 @@ cat "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_BITLOCKER_BA
 #   printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}Domain${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_P12}${END}"
 #   openssl pkcs12 -export -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -inkey "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}" -out "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_P12}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 # 
-#   if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+#   if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
 #       echo ‎ ‎${GREY2} ↳  openssl pkcs12 -export -in \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -inkey \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN_ENC}\" -out \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_P12}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
 #       echo -e
 #   fi
 # #
 
 # #
-#   Bitlocker > Create > bitlocker.keycert.main-01.enc.priv.pem
+#   Bitlocker > Create              bitlocker.keycert.main-01.enc.priv.pem
+#   @search                         create-keycert-enc-main-01
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-009${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}${END}"
 openssl pkcs12 -in "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -aes-256-cbc -out "${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -aes-256-cbc -out \"${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.keycert.main-01.unc.priv.pem
+#   Bitlocker > Create              bitlocker.keycert.main-01.unc.priv.pem
+#   @search                         create-keycert-unc-main-01
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-010${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_UNC}${END}"
 openssl pkcs12 -in "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -nodes -out "${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -nodes -out \"${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\"
     echo -e
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.key.main-02.enc.priv.pem
+#   Bitlocker > Create              bitlocker.key.main-02.enc.priv.pem
+#   @search                         create-key-enc-main-02
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-011${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN02_ENC}${END}"
 openssl pkcs12 -in "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -out "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN02_ENC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -out \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN02_ENC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.key.main-02.unc.priv.pem
+#   Bitlocker > Create              bitlocker.key.main-02.unc.priv.pem
+#   @search                         create-key-unc-main-02
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-012${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN02_UNC}${END}"
 openssl pkcs12 -in "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -nocerts -nodes -out "${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN02_UNC}" -passin "pass:${PWD_IN}" -password "pass:${PWD_RAW}" -passout "pass:${PWD_OUT}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl pkcs12 -in \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -nocerts -nodes -out \"${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN02_UNC}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"
     echo -e
 fi
 
 # #
-#   Assign OpenSSH File
+#   Bitlocker                       Assign OpenSSH Private File
+#   @search                         assign-openssh-priv
+#
+#   ECC keys do not have RSA.
+#
+#   To generate the public OpenSSH key for RSA, we use the OpenSSH private key.
+#   Since ECC can't generate an OpenSSH private key from RSA, we need to tell the script which file to use to generate our ECC OpenSSH public key
 # #
 
-if [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
+if [ "${PARAM_MIXED}" == "true" ] || [ "${PARAM_ALGORITHM}" == "ec" ] || [ "${PARAM_ALGORITHM}" == "ecc" ] || [ "${PARAM_ALGORITHM}" == "ecdsa" ]; then
     SSL_KEY_RSA_PRIV="${SSL_KEY_MAIN_UNC}"
 fi
 
 # #
-#   RSA Keys
+#   Bitlocker                       RSA Keys
+#   @search                         create-keys-rsa
 #
 #   RSA keys get extra RSA keys/certs
 # #
 
-if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 
     # #
-    #   Bitlocker > Create > bitlocker.key.rsa.priv.pem
+    #   Bitlocker                       Create > bitlocker.key.rsa.priv.pem
+    #   @search                         create-keys-rsa-priv-pem
     # #
 
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-013${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}${END}"
     openssl rsa -in "${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}" -out "${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}" -outform PEM -traditional -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}\" -out \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}\" -outform PEM -traditional -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
         echo -e
     fi
 
     # #
-    #   Bitlocker > Create > bitlocker.key.rsa.pub.pem
+    #   Bitlocker                       Create > bitlocker.key.rsa.pub.pem
+    #   @search                         create-keys-rsa-pub-pem
     # #
 
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-014${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}${END}"
     openssl rsa -in "${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  openssl rsa -in \"${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"
         echo -e
     fi
@@ -2902,9 +3044,10 @@ if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.key.openssh.priv.pem
-#   also known as id_rsa
+#   Bitlocker                       Create > bitlocker.key.openssh.priv.pem
+#   @search                         create-keys-openssh-priv-pem
 #
+#   also known as id_rsa
 #   password must be at least five characters
 # #
 
@@ -2920,7 +3063,7 @@ if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
 
         chmod 600 "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV}"
 
-        if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+        if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
             echo ‎ ‎${GREY2} ↳  cp \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV}\"
             echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV}\"
             if [ -n "$PARAM_COMMENT" ]; then
@@ -2939,7 +3082,9 @@ else
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.key.openssh.priv.nopwd.pem
+#   Bitlocker                       Create > bitlocker.key.openssh.priv.nopwd.pem
+#   @search                         create-keys-openssh-priv-nopwd-pem
+#
 #   also known as id_rsa
 # #
 
@@ -2954,7 +3099,7 @@ if [ -f "${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
 
     chmod 600 "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  cp \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
         echo ‎ ‎${GREY2} ↳  ssh-keygen -p -m PEM -P \"${PWD_RAW}\"  -N \"${PWD_RAW}\" -f \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"
         if [ -n "$PARAM_COMMENT" ]; then
@@ -2969,7 +3114,9 @@ else
 fi
 
 # #
-#   Bitlocker > Create > bitlocker.key.openssh.pub
+#   Bitlocker                       Create > bitlocker.key.openssh.pub
+#   @search                         create-keys-openssh-pub-pem
+#
 #   also known as id_rsa.pub
 #   
 #   -y      Read a private OpenSSH format file and print an OpenSSH public key to stdout. 
@@ -2982,7 +3129,7 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-017${END}" 
 if [ -f "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
     ssh-keygen -P "${PWD_RAW}" -f "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PUB}"
 
-    if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+    if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         echo ‎ ‎${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PUB}\"
         echo -e
     fi
@@ -2992,31 +3139,34 @@ else
 fi
 
 # #
-#   Bitlocker > Create > crl/bitlocker.crl.pem
+#   Bitlocker > Create              crl/bitlocker.crl.pem
+#   @search                         create-crl-pem
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-018${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}${END}"
-openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
+openssl ca -gencrl -config "${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}" -keyfile "${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}" -cert "${PATH_ROOTCA_BASE}.${EXT_CRT}" -out "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}" -passin "pass:${PWD_IN}" -batch
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
-    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    echo ‎ ‎${GREY2} ↳  openssl ca -gencrl -config \"${PATH_ROOTCA}/${PARAM_CNF_ROOTCA}\" -keyfile \"${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}\" -cert \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}\" -passin pass:\"${PWD_IN}\" -batch
     echo -e
 fi
 
 # #
-#   Bitlocker > Create > crl/bitlocker.crl
+#   Bitlocker > Create              crl/bitlocker.crl
+#   @search                         create-crl
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-019${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}${END}"
 openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}" -outform DER -out "${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_BITLOCKER_BASE}.${EXT_CRL}\"
     echo -e
 fi
 
 # #
-#   Bitlocker > bitlocker.Fullchain.pem
+#   Bitlocker                       bitlocker.Fullchain.pem
+#   @search                         create-fullchain
 # #
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-020${END}" "${GREY3}${LNG_STEP_CHAIN_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER}/${SSL_CERT_FULLCHAIN}${END}"
@@ -3024,7 +3174,7 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-020${END}" 
 cat "${PATH_BITLOCKER_BASE}.${EXT_CRT}" >> "${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}"
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}"
 
-if [ "${BOOL_DEV_ENABLED}" == "true" ]; then
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     echo ‎ ‎${GREY2} ↳  cat ${PATH_BITLOCKER_BASE}.${EXT_CRT} \>\> ${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}
     echo ‎ ‎${GREY2} ↳  cat ${PATH_ROOTCA_BASE}.${EXT_CRT} \>\> ${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}
     echo -e
