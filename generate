@@ -233,6 +233,14 @@ PEACH=$'\e[38;5;210m'
 # END="\e[0m"
 
 # #
+#   Algorithm List
+# #
+
+declare -A ALGOS
+ALGOS["id-ecPublicKey"]="ECC"
+ALGOS["rsaEncryption"]="RSA"
+
+# #
 #   vars > system
 # #
 
@@ -411,7 +419,7 @@ PARAM_DAYS=36500
 PARAM_BITS=4096
 PARAM_CURVE=secp384r1
 PARAM_MD_ROOT=sha512
-PARAM_MD_SUB=sha384
+PARAM_MD_SUB=sha512
 PARAM_MIXED=false
 PARAM_DEV_ENABLED=false
 PARAM_NEW_KEYS=false
@@ -513,6 +521,8 @@ readStatus()
     fi
 
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_ALG=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public Key Algorithm/ {print $2}' | tr -d ' ' | sed 's/^[ \t]*//')
+        CRT_BITS=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public-Key/ {print $2}' | tr -d '()' | sed 's/^[ \t]*//')
         CRT_FINGERPRINT=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
         CRT_SERIAL=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
         CRT_CN=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
@@ -529,6 +539,8 @@ readStatus()
         printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ algorithm ............ ${ALGOS[$CRT_ALG]}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ bits ................. ${CRT_BITS}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CRT}${END}" "❌${END}"
@@ -560,6 +572,8 @@ readStatus()
     fi
 
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_ALG=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public Key Algorithm/ {print $2}' | tr -d ' ' | sed 's/^[ \t]*//')
+        CRT_BITS=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public-Key/ {print $2}' | tr -d '()' | sed 's/^[ \t]*//')
         CRT_FINGERPRINT=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
         CRT_SERIAL=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
         CRT_CN=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
@@ -576,6 +590,8 @@ readStatus()
         printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ algorithm ............ ${ALGOS[$CRT_ALG]}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ bits ................. ${CRT_BITS}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CRT}${END}" "❌${END}"
@@ -694,6 +710,8 @@ readStatus()
     fi
 
     if ( set +f; ls ${PATH_AUTH_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_ALG=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public Key Algorithm/ {print $2}' | tr -d ' ' | sed 's/^[ \t]*//')
+        CRT_BITS=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public-Key/ {print $2}' | tr -d '()' | sed 's/^[ \t]*//')
         CRT_FINGERPRINT=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
         CRT_SERIAL=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
         CRT_CN=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
@@ -710,6 +728,8 @@ readStatus()
         printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ algorithm ............ ${ALGOS[$CRT_ALG]}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ bits ................. ${CRT_BITS}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_AUTH_BASE}.${EXT_CRT}${END}" "❌${END}"
@@ -833,6 +853,8 @@ readStatus()
     fi
 
     if ( set +f; ls ${PATH_BITLOCKER_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_ALG=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public Key Algorithm/ {print $2}' | tr -d ' ' | sed 's/^[ \t]*//')
+        CRT_BITS=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -noout -text | awk -F':' '/Public-Key/ {print $2}' | tr -d '()' | sed 's/^[ \t]*//')
         CRT_FINGERPRINT=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
         CRT_SERIAL=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
         CRT_CN=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
@@ -849,6 +871,8 @@ readStatus()
         printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ algorithm ............ ${ALGOS[$CRT_ALG]}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ bits ................. ${CRT_BITS}${END}"
         printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_BITLOCKER_BASE}.${EXT_CRT}${END}" "❌${END}"
