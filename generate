@@ -241,6 +241,40 @@ ALGOS["id-ecPublicKey"]="ECC"
 ALGOS["rsaEncryption"]="RSA"
 
 # #
+#   distro
+#
+#   returns distro information.
+# #
+
+# freedesktop.org and systemd
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS=$NAME
+    OS_VER=$VERSION_ID
+
+# linuxbase.org
+elif type lsb_release >/dev/null 2>&1; then
+    OS=$(lsb_release -si)
+    OS_VER=$(lsb_release -sr)
+
+# versions of Debian/Ubuntu without lsb_release cmd
+elif [ -f /etc/lsb-release ]; then
+    . /etc/lsb-release
+    OS=$DISTRIB_ID
+    OS_VER=$DISTRIB_RELEASE
+
+# older Debian/Ubuntu/etc distros
+elif [ -f /etc/debian_version ]; then
+    OS=Debian
+    OS_VER=$(cat /etc/debian_version)
+
+# fallback: uname, e.g. "Linux <version>", also works for BSD
+else
+    OS=$(uname -s)
+    OS_VER=$(uname -r)
+fi
+
+# #
 #   vars > system
 # #
 
@@ -272,6 +306,10 @@ APP_THIS=$(basename "$0")
 APP_TITLE="OCG"
 APP_ABOUT="A script to generate SSL certificates using OpenSSL"
 APP_VER=("1" "0" "0" "0")
+APP_REPO_AUTHOR="Aetherinox"
+APP_REPO_NAME="ssl-cert-generator"
+APP_REPO_BRANCH="main"
+APP_REPO_URL="https://github.com/${APP_REPO_AUTHOR}/${APP_REPO_NAME}"
 
 # #
 #   func > get version
@@ -457,6 +495,60 @@ get_version_compare_gt()
 {
     test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1";
 }
+
+# #
+#   func > Tree
+#
+#   shows an example of the files that you should have using this generator in their
+#   proper structure
+# #
+
+showTree()
+{
+    printf '  %-5s %-40s\n' "${GREEN}Structure:${END}" "" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} 📁 ${BLUE}${FOLDER_CERTS}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_CERTS}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_CRL}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRL}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  └─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRL}.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_GEN}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}00.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}01.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  └─ 📄 ${WHITE}02.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_CRLNUMBER}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${PARAM_CNF_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${PARAM_CNF_BITLOCKER}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRT}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_PFX}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_SERIAL}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  └─ 📄 ${WHITE}${FILE_ROOTCA_SERIAL}.${EXT_OLD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_DOMAIN}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${EXT_CRT}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${EXT_CSR}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEY_MAIN_ENC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEY_MAIN_UNC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEY_MAIN02_ENC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_CERT_MAIN_UNC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  └─ 📄 ${WHITE}${FILE_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_AUTH}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_BITLOCKER}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} └─ 📄 ${WHITE}${APP_THIS}${END}" 1>&2
+}
+
 
 # #
 #   Check files
@@ -996,34 +1088,7 @@ opt_usage()
     printf '  %-5s %-40s\n' "${GREEN}Usage:${END}" "" 1>&2
     printf '  %-5s %-40s\n' "    " "${0} [ ${GREY3}options${END} ]" 1>&2
     printf '  %-5s %-40s\n\n' "    " "${0} [ ${GREY3}--new --algorithm "rsa" --name \"CompanyName\"${END} ] [ ${GREY3}--pass \"YOUR_PASSWD\"${END} ] [ ${GREY3}--version${END} ] [ ${GREY3}--help${END} ]" 1>&2
-    printf '  %-5s %-40s\n' "${GREEN}Structure:${END}" "" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} 📁 ${BLUE}${FOLDER_CERTS}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_ROOTCA}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_CERTS}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_CRL}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRL}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  └─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRL}.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_GEN}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}00.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}01.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  └─ 📄 ${WHITE}02.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_CRLNUMBER}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${PARAM_CNF_ROOTCA}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${PARAM_CNF_BITLOCKER}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRT}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_PFX}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_SERIAL}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} │  └─ 📄 ${WHITE}${FILE_ROOTCA_SERIAL}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_DOMAIN}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_AUTH}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_BITLOCKER}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} └─ 📄 ${WHITE}${APP_THIS}${END}" 1>&2
+    showTree
     printf '  %-5s %-40s\n' "" "" 1>&2
     printf '  %-5s %-40s\n' "${GREEN}Options:${WHITE}" "" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-n,  --new" "Generate new keys" 1>&2
@@ -1031,16 +1096,18 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}this command from generating new keys. delete any private key files ending with${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}.pem or .key${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-f,  --config" "OpenSSL config file to load - default: ${PEACH}${PARAM_CNF_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-F,  --config-bitlocker" "OpenSSL config file to load for bitlocker keys/cert - default: ${PEACH}${PARAM_CNF_BITLOCKER}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-i,  --import" "Import existing RSA or ECC private key${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}allows you to import an existing private key from another directory.${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}must specify a private key with an intact header. the following are acceptable:${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ${HEADER_RSA_PRIV_ENC}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ${HEADER_RSA_PRIV_UNC}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ${HEADER_ECC_PRIV_UNC}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-a,  --algorithm" "Type of key to generate${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-a,  --algorithm" "Type of key to generate - default: ${PEACH}${PARAM_ALGORITHM}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}cannot be used in combination with the argument ${PEACH}--mixed${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - ecc${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - rsa${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-V,  --curve" "ECC curve${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-V,  --curve" "ECC curve - default: ${PEACH}${PARAM_CURVE}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}accepts any curves included with OpenSSL${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - secp384r1${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - secp521r1${END}" 1>&2
@@ -1048,7 +1115,7 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - c2pnb368w1${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - c2tnb431r1${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - prime256v1${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-b,  --bits" "Bits to use${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-b,  --bits" "Bits to use for RSA keys / certs - default: ${PEACH}${PARAM_BITS}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "     --digest-root" "Message digest to use with the rootCA - default: ${PEACH}${PARAM_MD_ROOT}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA224${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA256${END}" 1>&2
@@ -1060,19 +1127,21 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA384${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA512${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-M,  --mixed" "Toggles rootCA cert/key to be generated using ${PEACH}RSA ${PARAM_BITS}${END}, all subkeys will use ${PEACH}ECC ${PARAM_CURVE}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "" "${GREY2}cannot be used in combination with the argument ${PEACH}--algorithm${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-N,  --friendlyname" "Friendly name to use for certificate${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-P,  --pass" "Password to use for certs and keys${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-I,  --passin" "Password in${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-O,  --passout" "Password out${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-H,  --homeFolder" "Set the home folder - default: ${PEACH}${APP_DIR}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-C,  --certsFolder" "Set the certs folder - default: ${PEACH}${FOLDER_CERTS}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-R,  --rootcaFolder" "Set the rootCA folder - default: ${PEACH}${FOLDER_ROOTCA}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-D,  --domainFolder" "Set the domain folder - default: ${PEACH}${FOLDER_DOMAIN}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-H,  --homeFolder" "Set home folder - default: ${PEACH}${APP_DIR}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-C,  --certsFolder" "Set certs folder - default: ${PEACH}${FOLDER_CERTS}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-R,  --rootcaFolder" "Set rootCA folder - default: ${PEACH}${FOLDER_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-D,  --domainFolder" "Set domain folder - default: ${PEACH}${FOLDER_DOMAIN}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-d,  --days" "Certificate expiration time in days" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-t,  --comment" "specify a comment to add to RSA and OpenSSH keys" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-c,  --clean" "Remove all files, but keep ${PEACH}${PARAM_CNF_ROOTCA}${END}, and main private ${PEACH}${EXT_PEM}${END} keys" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "-w,  --wipe" "Remove every file in certificates folder except ${PEACH}${PARAM_CNF_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-c,  --clean" "Remove all files; keeps ${PEACH}OpenSSL ${EXT_CNF}${END} files, and main private ${PEACH}${EXT_PEM}${END} keys" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-w,  --wipe" "Remove all files; keeps ${PEACH}OpenSSL ${EXT_CNF}${END} files" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-v,  --vars" "List all variables / paths" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-T,  --tree" "Shows an example of the files you should have when using this generator" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-s,  --status" "Output a list of certs & keys generated to check for all files" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-v,  --version" "Current version of this generator" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-x,  --dev" "Developer mode" 1>&2
@@ -1096,6 +1165,18 @@ while [ $# -gt 0 ]; do
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_CNF_ROOTCA="${1#*=}"
             if [ -z "${PARAM_CNF_ROOTCA}" ]; then
+                echo -e "  ${END}Must specify a valid OpenSSL .cnf config"
+                echo -e "  ${END}      Default:  ${YELLOW}${PARAM_CNF_ROOTCA}${END}"
+                echo -e
+
+                exit 1
+            fi
+            ;;
+
+        -F|--config-bitlocker)
+            if [[ "$1" != *=* ]]; then shift; fi
+            PARAM_CNF_BITLOCKER="${1#*=}"
+            if [ -z "${PARAM_CNF_BITLOCKER}" ]; then
                 echo -e "  ${END}Must specify a valid OpenSSL .cnf config"
                 echo -e "  ${END}      Default:  ${YELLOW}${PARAM_CNF_ROOTCA}${END}"
                 echo -e
@@ -1407,17 +1488,29 @@ while [ $# -gt 0 ]; do
 
         -z*|--help*)
             opt_usage
+            exit 1
             ;;
 
         -s|--status)
+            echo
             readStatus
+            echo
+            exit 1
+            ;;
+
+        -T|--tree)
+            echo
+            showTree
+            echo
+            exit 1
             ;;
 
         -v|--version)
             echo
+            # hi
             echo -e "  ${GREEN}${BOLD}${APP_TITLE}${END} - v$(get_version)${END}"
-            echo -e "  ${GREY3}${BOLD}${app_repo_url}${END}"
-            echo -e "  ${GREY3}${BOLD}${OS} | ${OS_VER}${END}"
+            echo -e "  ${GREY3}${BOLD}${APP_REPO_URL}${END}"
+            echo -e "  ${GREY3}${BOLD}${OS} | ${SYS_CODE}${END}"
             echo
             exit 1
             ;;
