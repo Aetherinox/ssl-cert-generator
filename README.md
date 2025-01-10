@@ -10,6 +10,7 @@
 - [rootCA Authority](#rootca-authority)
 - [Domain Authority](#domain-authority)
 - [Authentication Authority](#authentication-authority)
+- [Encryption Authority](#encryption-authority)
 - [Install](#install)
 - [Arguments](#arguments)
 - [Commands](#commands)
@@ -46,6 +47,7 @@ Generates a bundle of SSL certificates with varying purposes. After the set of c
 - rootCA Certificate Authority
 - Domain Authority
 - Authentication Authority
+- Encryption Authority
 
 <br />
 
@@ -302,6 +304,15 @@ basicConstraints        = CA:false, pathlen:0
 # keyUsage              = critical, digitalSignature, keyEncipherment, keyAgreement
 # extendedKeyUsage      = critical, serverAuth, clientAuth
 ```
+
+<br />
+
+---
+
+<br />
+
+## Encryption Authority
+These certs / keys can be utilized for things such as Bitlocker encryption and EFS (Windows encrypted filesystem). They are ready to be imported into a security device such as a Yubikey, and will typically go into `Slot 9D`. This can be achieved by using the [Yubikey Manager](https://www.yubico.com/support/download/yubikey-manager/) application
 
 <br />
 
