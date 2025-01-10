@@ -557,7 +557,7 @@ readStatus()
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "❌${END}"
     fi
 
-    if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}* ) 1> /dev/null 2>&1; then
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}${END}" "✔️${END}"
         else
@@ -565,7 +565,7 @@ readStatus()
         fi
     fi
 
-    if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}* ) 1> /dev/null 2>&1; then
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}${END}" "✔️${END}"
         else
@@ -680,7 +680,7 @@ readStatus()
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_AUTH_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "❌${END}"
     fi
 
-    if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         if ( set +f; ls ${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}* ) 1> /dev/null 2>&1; then
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_AUTH_BASE}.${SSL_KEY_RSA_PRIV}${END}" "✔️${END}"
         else
@@ -688,7 +688,7 @@ readStatus()
         fi
     fi
 
-    if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         if ( set +f; ls ${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}* ) 1> /dev/null 2>&1; then
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}${END}" "✔️${END}"
         else
@@ -803,7 +803,7 @@ readStatus()
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_BITLOCKER_BASE}.${SSL_KEY_MAIN02_UNC}${END}" "❌${END}"
     fi
 
-    if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         if ( set +f; ls ${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}* ) 1> /dev/null 2>&1; then
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}${END}" "✔️${END}"
         else
@@ -811,7 +811,7 @@ readStatus()
         fi
     fi
 
-    if [ "${PARAM_ALGORITHM}" == "rsa" ]; then
+    if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
         if ( set +f; ls ${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}* ) 1> /dev/null 2>&1; then
             printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}${END}" "✔️${END}"
         else
@@ -1327,6 +1327,7 @@ if [ "${PARAM_MIXED}" == "false" ]; then
     fi
 else
     PARAM_CNF_ROOTCA="${FILE_ROOTCA_CNF}-rsa.${EXT_CNF}"
+    PARAM_CNF_BITLOCKER="${FILE_BITLOCKER_CNF}-ecc.${EXT_CNF}"
 fi
 
 # #
@@ -1928,6 +1929,18 @@ openssl crl -inform PEM -in "${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EX
 if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl crl -inform PEM -in \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${SSL_EXT_CRL_PEM}\" -outform DER -out \"${PATH_ROOTCA_SUB_CRL}/${FILE_ROOTCA_BASE}.${EXT_CRL}\"${END}"
     echo -e
+fi
+
+# #
+#   Mixed > Change OpenSSL Config Files
+#
+#   If running in mixed mode, we need to change over to the rootCA-ecc config file after the rootCA
+#   cert and keys are generated so that the remaining certs can be made using ecc instead of rsa
+# #
+
+if [ "${PARAM_MIXED}" == "true" ]; then
+    PARAM_CNF_ROOTCA="${FILE_ROOTCA_CNF}-ecc.${EXT_CNF}"
+    PARAM_CNF_BITLOCKER="${FILE_BITLOCKER_CNF}-ecc.${EXT_CNF}"
 fi
 
 # #
@@ -3441,5 +3454,3 @@ fi
 readStatus
 
 exit 1
-
-
