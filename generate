@@ -1644,7 +1644,7 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-001${END}" "${
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}" ]; then
 > "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}"
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  \> \"${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  > \"${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}\"${END}"
     fi
 else
     touch "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}"
@@ -1664,7 +1664,7 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_ROOTCA_BASE}-002${END}" "${
 if [ -f "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}" ]; then
 > "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}"
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  \> \"${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  > \"${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}\"${END}"
     fi
 else
     touch "${PATH_ROOTCA}/${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}"
@@ -2149,6 +2149,11 @@ fi
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}${END}"
 cat "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}"
 
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" | base64 > \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}\"${END}"
+    echo -e
+fi
+
 # #
 #   Domain                          Create > domain.keystore.p12
 #   @search                         create-p12
@@ -2263,7 +2268,7 @@ if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     openssl rsa -in "${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_DOMAIN_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout > \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"${END}"
         echo -e
     fi
 
@@ -2412,7 +2417,7 @@ if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
     ssh-keygen -P "${PWD_RAW}" -f "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}"
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y > \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PUB}\"${END}"
         echo -e
     fi
 else
@@ -2457,8 +2462,8 @@ cat "${PATH_DOMAIN_BASE}.${EXT_CRT}" >> "${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SS
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}"
 
 if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat ${PATH_DOMAIN_BASE}.${EXT_CRT} \>\> ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat ${PATH_ROOTCA_BASE}.${EXT_CRT} \>\> ${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" >> \"${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}\"${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" >> \"${PATH_DOMAIN}/${FILE_DOMAIN_BASE}.${SSL_CERT_FULLCHAIN}\"${END}"
     echo -e
 fi
 
@@ -2764,7 +2769,7 @@ if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     openssl rsa -in "${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}\" -passin "pass:${PWD_IN}" -passout pass:\"${PWD_OUT}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout > \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}\" -passin "pass:${PWD_IN}" -passout pass:\"${PWD_OUT}\"${END}"
         echo -e
     fi
 
@@ -2915,7 +2920,7 @@ if [ -f "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
     ssh-keygen -P "${PWD_RAW}" -f "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_AUTH_BASE}.${SSL_KEY_SSH_PUB}"
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PUB}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y > \"${PATH_AUTH_BASE}.${SSL_KEY_SSH_PUB}\"${END}"
         echo -e
     fi
 else
@@ -2960,8 +2965,8 @@ cat "${PATH_AUTH_BASE}.${EXT_CRT}" >> "${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}"
 
 if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat ${PATH_AUTH_BASE}.${EXT_CRT} \>\> ${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}${END}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat ${PATH_ROOTCA_BASE}.${EXT_CRT} \>\> ${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_AUTH_BASE}.${EXT_CRT}\" >> \"${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}\"${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" >> \"${PATH_AUTH}/${FILE_AUTH_BASE}.${SSL_CERT_FULLCHAIN}\"${END}"
     echo -e
 fi
 
@@ -3267,7 +3272,7 @@ if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     openssl rsa -in "${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout \> \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_BITLOCKER_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout > \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PUB}\" -passin pass:\"${PWD_IN}\" -passout pass:\"${PWD_OUT}\"${END}"
         echo -e
     fi
 
@@ -3419,7 +3424,7 @@ if [ -f "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" ]; then
     ssh-keygen -P "${PWD_RAW}" -f "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}" -y > "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PUB}"
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y \> \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PUB}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  ssh-keygen -P \"${PWD_RAW}\" -f \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\" -y > \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PUB}\"${END}"
         echo -e
     fi
 else
@@ -3464,8 +3469,8 @@ cat "${PATH_BITLOCKER_BASE}.${EXT_CRT}" >> "${PATH_BITLOCKER}/${FILE_BITLOCKER_B
 cat "${PATH_ROOTCA_BASE}.${EXT_CRT}" >> "${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}"
 
 if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat ${PATH_BITLOCKER_BASE}.${EXT_CRT} \>\> ${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}${END}"
-    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat ${PATH_ROOTCA_BASE}.${EXT_CRT} \>\> ${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" >> \"${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}\"${END}"
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_ROOTCA_BASE}.${EXT_CRT}\" >> \"${PATH_BITLOCKER}/${FILE_BITLOCKER_BASE}.${SSL_CERT_FULLCHAIN}\"${END}"
     echo -e
 fi
 
