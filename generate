@@ -505,16 +505,35 @@ readStatus()
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" "❌${END}"
     fi
+
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_UNC}* ) 1> /dev/null 2>&1; then
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" "✔️${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" "❌${END}"
     fi
+
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_FINGERPRINT=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
+        CRT_SERIAL=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
+        CRT_CN=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_O=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -subject -noout | grep -o 'O = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_OU=$(openssl x509 -in "${PATH_ROOTCA_BASE}.${EXT_CRT}" -subject -noout | grep -o 'OU = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+
+        CRT_DAYS=$(date -d "$(openssl x509 -in ${PATH_ROOTCA_BASE}.${EXT_CRT} -enddate -noout | cut -d'=' -f2)" "+%s")
+        DAYS_CURRENT=$(date "+%s")
+        CRT_DAYS_REMAINS=$((($CRT_DAYS - $DAYS_CURRENT) / 60 / 60 / 24))
+
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CRT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ common name .......... ${CRT_CN}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ organization ......... ${CRT_O}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_CRT}${END}" "❌${END}"
     fi
+
     if ( set +f; ls ${PATH_ROOTCA_BASE}.*${EXT_PFX}* ) 1> /dev/null 2>&1; then
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_ROOTCA_BASE}.${EXT_PFX}${END}" "✔️${END}"
     else
@@ -539,11 +558,29 @@ readStatus()
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CSR}${END}" "❌${END}"
     fi
+
     if ( set +f; ls ${PATH_DOMAIN_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_FINGERPRINT=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
+        CRT_SERIAL=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
+        CRT_CN=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_O=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -subject -noout | grep -o 'O = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_OU=$(openssl x509 -in "${PATH_DOMAIN_BASE}.${EXT_CRT}" -subject -noout | grep -o 'OU = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+
+        CRT_DAYS=$(date -d "$(openssl x509 -in ${PATH_DOMAIN_BASE}.${EXT_CRT} -enddate -noout | cut -d'=' -f2)" "+%s")
+        DAYS_CURRENT=$(date "+%s")
+        CRT_DAYS_REMAINS=$((($CRT_DAYS - $DAYS_CURRENT) / 60 / 60 / 24))
+
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CRT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ common name .......... ${CRT_CN}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ organization ......... ${CRT_O}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${EXT_CRT}${END}" "❌${END}"
     fi
+
     if ( set +f; ls ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}* ) 1> /dev/null 2>&1; then
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}${END}" "✔️${END}"
     else
@@ -657,7 +694,23 @@ readStatus()
     fi
 
     if ( set +f; ls ${PATH_AUTH_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_FINGERPRINT=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
+        CRT_SERIAL=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
+        CRT_CN=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_O=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -subject -noout | grep -o 'O = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_OU=$(openssl x509 -in "${PATH_AUTH_BASE}.${EXT_CRT}" -subject -noout | grep -o 'OU = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+
+        CRT_DAYS=$(date -d "$(openssl x509 -in ${PATH_AUTH_BASE}.${EXT_CRT} -enddate -noout | cut -d'=' -f2)" "+%s")
+        DAYS_CURRENT=$(date "+%s")
+        CRT_DAYS_REMAINS=$((($CRT_DAYS - $DAYS_CURRENT) / 60 / 60 / 24))
+
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_AUTH_BASE}.${EXT_CRT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ common name .......... ${CRT_CN}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ organization ......... ${CRT_O}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_AUTH_BASE}.${EXT_CRT}${END}" "❌${END}"
     fi
@@ -780,7 +833,23 @@ readStatus()
     fi
 
     if ( set +f; ls ${PATH_BITLOCKER_BASE}.*${EXT_CRT}* ) 1> /dev/null 2>&1; then
+        CRT_FINGERPRINT=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -noout -fingerprint | cut -d= -f2 | sed 's/://g' )
+        CRT_SERIAL=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -noout -serial | cut -d= -f2 | sed 's/://g' )
+        CRT_CN=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -subject -noout | grep -o 'CN = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_O=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -subject -noout | grep -o 'O = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+        CRT_OU=$(openssl x509 -in "${PATH_BITLOCKER_BASE}.${EXT_CRT}" -subject -noout | grep -o 'OU = [^,]*' | cut -d '=' -f 2 | sed 's/^[ \t]*//')
+
+        CRT_DAYS=$(date -d "$(openssl x509 -in ${PATH_BITLOCKER_BASE}.${EXT_CRT} -enddate -noout | cut -d'=' -f2)" "+%s")
+        DAYS_CURRENT=$(date "+%s")
+        CRT_DAYS_REMAINS=$((($CRT_DAYS - $DAYS_CURRENT) / 60 / 60 / 24))
+
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_BITLOCKER_BASE}.${EXT_CRT}${END}" "✔️${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ common name .......... ${CRT_CN}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ organization ......... ${CRT_O}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳                        ${CRT_OU}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ fingerprint .......... ${CRT_FINGERPRINT}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ serial ............... ${CRT_SERIAL}${END}"
+        printf '%-120s %-40s\n' "  ${BLUE}       ↳ remaining ............ ${CRT_DAYS_REMAINS} days${END}"
     else
         printf '%-120s %-40s\n' "  ${GREEN}  ↳ 🔑 ${PATH_BITLOCKER_BASE}.${EXT_CRT}${END}" "❌${END}"
     fi
@@ -2655,6 +2724,11 @@ fi
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_AUTH_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}${END}"
 cat "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}"
 
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" | base64 > \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}\"${END}"
+    echo -e
+fi
+
 # #
 #   Authentication                  Create > 9a.keystore.p12
 #   @search                         create-p12
@@ -2769,7 +2843,7 @@ if [ "${PARAM_MIXED}" == "false" ] && [ "${PARAM_ALGORITHM}" == "rsa" ]; then
     openssl rsa -in "${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}" -pubout > "${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}" -passin "pass:${PWD_IN}" -passout "pass:${PWD_OUT}"
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout > \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}\" -passin "pass:${PWD_IN}" -passout pass:\"${PWD_OUT}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl rsa -in \"${PATH_AUTH_BASE}.${SSL_CERT_MAIN_ENC}\" -pubout > \"${PATH_AUTH_BASE}.${SSL_KEY_RSA_PUB}\" -passin \"pass:${PWD_IN}\" -passout pass:\"${PWD_OUT}\"${END}"
         echo -e
     fi
 
@@ -3157,6 +3231,11 @@ fi
 
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-008${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}${END}"
 cat "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" | base64 > "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}"
+
+if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
+    printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cat \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" | base64 > \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}\"${END}"
+    echo -e
+fi
 
 # #
 #   Bitlocker                       Create > bitlocker.keystore.p12
