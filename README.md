@@ -353,28 +353,34 @@ This utility has the following available arguments you can pass:
 
 | Argument | Description |
 | --- | --- |
-| <small>`-n, --new`</small> | <small>Generates new keys if existing private keys do not exist in the base folders `rootCA`, `domain`, and `master`</small> |
-| <small>`--import, -i`</small> | <small>Import existing RSA or ECC private key, and generate new public keys and certificates based on the private key.</small> |
-| <small>`--algorithm, -a`</small> | <small>Algorithm to use for key generation. These are the values available within OpenSSL. <br /><br /> `ecc`, `rsa` <br /><br /> Default: `rsa`</small> |
-| <small>`--curve, -V`</small> | <small>ECC curve; accepts all curves available through OpenSSL <br /><br /> `secp384r1`, `secp521r1`, `sect571k1`, `c2pnb368w1`, `c2tnb431r1`, `prime256v1` <br /><br /> Default: `rsa`</small> |
-| <small>`--bits, -b`</small> | <small>Specifies the number of bits to use with an RSA key <br /><br /> Default: `4096`</small> |
-| <small>`--friendlyname, -N`</small> | <small>Friendly name to use for certificate</small> |
-| <small>`--pass, -P`</small> | <small>Password to use for certs and keys</small> |
-| <small>`--passin, -I`</small> | <small>Password to use for imported keys, and private keys needed to make new keys</small> |
-| <small>`--passout, -O`</small> | <small>Password to use when creating a new private key from an existing, this password is applied to the newer keys</small> |
-| <small>`--homeFolder, -H`</small> | <small>Set the home folder <br/> This is the folder where the `generate` app currently resides.<br/><br/> Default: `${PWD}`</small> |
-| <small>`--certsFolder, -C`</small> | <small>Set the certs folder <br/>Re-names the `certificates` folder. <br/><br/> Default: `certificates`</small> |
-| <small>`--rootcaFolder, -R`</small> | <small>Set the rootCA folder <br/><br/> Default: `rootCA`</small> |
-| <small>`--domainFolder, -D`</small> | <small>Set the domain folder <br /><br/> Default: `domain`</small> |
-| <small>`--days, -d`</small> | <small>Certificate expiration time in days <br /><br/> Default: `36500`</small> |
-| <small>`--comment, -t`</small> | <small>specify a comment to add to RSA and OpenSSH keys <br /><br/> Default: `OCG 1.0.0.0`</small> |
-| <small>`--clean, -c`</small> | <small>Remove all files, but keep OpenSSL config `rootCA.cnf` and main private `.pem` keys</small> |
-| <small>`--wipe, -w`</small> | <small>Remove every file in `certificates` / `certsFolder` folder, `rootcaFolder` OpenSSL config `rootCA.cnf` excluded and will remain</small> |
-| <small>`--vars, -v`</small> | <small>List all variables / paths</small> |
-| <small>`--status, -s`</small> | <small>Output a list of certs & keys generated to check for all files</small> |
-| <small>`--version, -v`</small> | <small>Current version of this generator</small> |
-| <small>`--dev, -x`</small> | <small>Developer mode</small> |
-| <small>`--help, -z`</small> | <small>Show this help menu</small> |
+| <small>`-n, --new`</small> | <small>Generates new keys if existing private keys do not exist in the base folders `rootCA`, `domain`, `auth`, and `bitlocker`</small> |
+| <small>`-f, --config`</small> | <small>OpenSSL config file to load <br /><br /> Default: `rootCA-rsa.cnf` </small> |
+| <small>`-F, --config-bitlocker`</small> | <small>OpenSSL config file to load for bitlocker keys/cert <br /><br /> Default: `bitlocker-rsa.cnf` </small> |
+| <small>`-i, --import`</small> | <small>Import existing RSA or ECC private key, and generate new public keys and certificates based on the private key. <br/><br /> must specify a private key with an intact header. the following are acceptable: <br/> <br /> `BEGIN ENCRYPTED PRIVATE KEY` <br /> `BEGIN PRIVATE KEY` <br /> `BEGIN EC PRIVATE KEY`</small> |
+| <small>`-a, --algorithm`</small> | <small>Algorithm to use for key generation. These are the values available within OpenSSL. <br /> `ecc` <br /> `rsa` <br /><br /> cannot be used in combination with the argument `--mixed` <br /><br /> Default: `rsa` </small> |
+| <small>`-V, --curve`</small> | <small>ECC curve; accepts all curves available through OpenSSL <br /> `secp384r1` <br /> `secp521r1` <br /> `sect571k1` <br /> `c2pnb368w1` <br /> `c2tnb431r1` <br /> `prime256v1` <br /><br /> Default: `secp384r1` </small> |
+| <small>`-b, --bits`</small> | <small>Specifies the number of bits to use with an RSA key <br /><br /> Default: `4096`</small> |
+| <small>`-dr, --digest-root`</small> | <small>Message digest to use with the rootCA `SHA224` <br /> `SHA256` <br /> `SHA384` <br /> `SHA512` <br /><br /> Default: `sha512` </small> |
+| <small>`-ds, --digest-sub`</small> | <small>Message digest to use with sub-keys <br /> `SHA224` <br /> `SHA256` <br /> `SHA384` <br /> `SHA512` <br /><br /> Default: `sha512` </small> |
+| <small>`-M, --mixed`</small> | <small>Toggles rootCA cert/key to be generated using `RSA 4096`, all sub-keys will use ECC `secp384r1` <br /><br /> cannot be used in combination with the argument `--algorithm` </small> |
+| <small>`-N, --friendlyname`</small> | <small>Friendly name to use for certificate <br/><br/> Default: `Self-hosted`</small> |
+| <small>`-P, --pass`</small> | <small>Password to use for certs and keys</small> |
+| <small>`-I, --passin`</small> | <small>Password to use for imported keys, and private keys needed to make new keys</small> |
+| <small>`-O, --passout`</small> | <small>Password to use when creating a new private key from an existing, this password is applied to the newer keys</small> |
+| <small>`-H, --homeFolder`</small> | <small>Set the home folder <br/> This is the folder where the `generate` app currently resides. <br/><br/> Default: `${PWD}` </small> |
+| <small>`-C, --certsFolder` </small> | <small>Set the certs folder <br/>Re-names the `certificates` folder. <br/><br/> Default: `certificates` </small> |
+| <small>`-R, --rootcaFolder`</small> | <small>Set the rootCA folder <br/><br/> Default: `rootCA` </small> |
+| <small>`-D, --domainFolder`</small> | <small>Set the domain folder <br /><br/> Default: `domain` </small> |
+| <small>`-d, --days`</small> | <small>Certificate expiration time in days <br /><br/> Default: `36500` </small> |
+| <small>`-t, --comment`</small> | <small>specify a comment to add to RSA and OpenSSH keys <br /><br/> Default: `OCG 1.0.0.0` </small> |
+| <small>`-c, --clean`</small> | <small>Remove all files, but keep OpenSSL config `rootCA.cnf` and main private `.pem` keys </small> |
+| <small>`-w, --wipe`</small> | <small>Remove every file in `certificates` / `certsFolder` folder, `rootcaFolder` OpenSSL config `rootCA.cnf` excluded and will remain</small> |
+| <small>`-v, --vars`</small> | <small>List all variables / paths</small> |
+| <small>`-T, --tree`</small> | <small>Shows an example of the files you should have when using this generator</small> |
+| <small>`-s, --status`</small> | <small>Output a list of certs & keys generated to check for all files</small> |
+| <small>`-v, --version`</small> | <small>Current version of this generator</small> |
+| <small>`-x, --dev`</small> | <small>Developer mode</small> |
+| <small>`-z, --help`</small> | <small>Show this help menu</small> |
 
 <br />
 

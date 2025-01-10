@@ -450,7 +450,7 @@ EXT_ATTR="attr"
 # #
 
 PARAM_COMMENT="${APP_TITLE} $(get_version)"
-PARAM_FRIENDLY="CompanyName"
+PARAM_FRIENDLY="Self-hosted"
 PARAM_ALGORITHM=rsa
 PARAM_ALGORITHM_SET=false
 PARAM_DAYS=36500
@@ -1116,12 +1116,12 @@ opt_usage()
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - c2tnb431r1${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - prime256v1${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-b,  --bits" "Bits to use for RSA keys / certs - default: ${PEACH}${PARAM_BITS}${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "     --digest-root" "Message digest to use with the rootCA - default: ${PEACH}${PARAM_MD_ROOT}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-dr, --digest-root" "Message digest to use with the rootCA - default: ${PEACH}${PARAM_MD_ROOT}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA224${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA256${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA384${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA512${END}" 1>&2
-    printf '  %-5s %-24s %-40s\n' "    " "     --digest-sub" "Message digest to use with subkeys - default: ${PEACH}${PARAM_MD_SUB}${END}" 1>&2
+    printf '  %-5s %-24s %-40s\n' "    " "-ds, --digest-sub" "Message digest to use with subkeys - default: ${PEACH}${PARAM_MD_SUB}${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA224${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA256${END}" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "" "${GREEN}   - SHA384${END}" 1>&2
@@ -1274,12 +1274,12 @@ while [ $# -gt 0 ]; do
             fi
             ;;
 
-        --digest-root)
+        -dr|--digest-root)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_MD_ROOT="${1#*=}"
             ;;
 
-        --digest-sub)
+        -ds|--digest-sub)
             if [[ "$1" != *=* ]]; then shift; fi
             PARAM_MD_SUB="${1#*=}"
             ;;
