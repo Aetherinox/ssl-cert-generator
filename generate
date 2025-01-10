@@ -110,6 +110,7 @@
 #   
 #       generate --new --pass "abc"
 #       generate --new --pass "abc" --algorithm "ecc" || "rsa"
+#       generate --new --pass "abc" --algorithm "rsa"
 #       generate --new --pass "abc" --algorithm "ecc" --homeFolder "/path/to/certs"
 #       generate --new --pass "abc" --algorithm "ecc" --config "rootCA-ecc.cnf" --name "Domain.local"
 #       generate --new --pass "abc" --algorithm "ecc" --config "rootCA-ecc.cnf" --homeFolder "/path/to/certs" --domainFolder "domain.local"
@@ -121,6 +122,23 @@
 #       generate --clean
 #       generate --help
 #   
+#   ―― EXISTING MODE -――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
+#   
+#       Existing mode will check to see if you already have private keys in the folders used
+#       to generate keys/certs.
+#
+#       The existing private keys will be used to generate new public keys and certificates
+#       instead of generating new private keys.
+#
+#       To use this mode, existing private keys must exist
+#
+#       generate --name "Domain.local" 
+#
+#   ―― MIXED MODE -――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――-
+#   
+#       Mixed mode generates rootCA in RSA-4096 and then all subkeys / certs with ECC-384
+#       generate --new --pass "abc" --passin "abc" --passout "abc" --mixed
+#
 #   ―― GENERATE NEW ――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――
 #   
 #       Use the following command to generate new keys / certificates without any previous keys.
@@ -1073,8 +1091,8 @@ while [ $# -gt 0 ]; do
             PARAM_ALGORITHM_SET="true"
             if [ -z "${PARAM_ALGORITHM}" ]; then
                 echo -e "  ${END}Must specify a key algorithm: ${GREY2}ecc, rsa${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --algorithm rsa${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} -a ecc${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} --algorithm rsa${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} -a ecc${END}"
                 echo -e
 
                 exit 1
@@ -1118,8 +1136,8 @@ while [ $# -gt 0 ]; do
             PWD_IN="${1#*=}"
             if [ -z "${PWD_IN}" ]; then
                 echo -e "  ${END}Must specify passin"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --passin password${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} -I password${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} --passin password${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} -I password${END}"
                 echo -e
 
                 exit 1
@@ -1132,8 +1150,8 @@ while [ $# -gt 0 ]; do
             PWD_OUT="${1#*=}"
             if [ -z "${PWD_OUT}" ]; then
                 echo -e "  ${END}Must specify passout"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --passout password${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} -O password${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} --passout password${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} -O password${END}"
                 echo -e
 
                 exit 1
@@ -1152,8 +1170,8 @@ while [ $# -gt 0 ]; do
             PARAM_DAYS="${1#*=}"
             if [ -z "${PARAM_DAYS}" ]; then
                 echo -e "  ${END}Must specify valid expiration days ${GREY2}36500${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --days 360${END}"
-                echo -e "      ${BOLD}${GREY2}./${APP_THIS} --d 700${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} --days 360${END}"
+                echo -e "      ${BOLD}${GREY2}${APP_THIS} --d 700${END}"
                 echo -e
 
                 exit 1
@@ -1538,10 +1556,10 @@ if [ -z "${PARAM_NEW_KEYS}" ] || [ "${PARAM_NEW_KEYS}" == "false" ]; then
         echo -e "      ${BOLD}${GREY2}${PATH_ROOTCA_BASE}.*${SSL_KEY_MAIN_ENC}*${END}"
         echo -e
         echo -e "  ${BOLD}You must either supply an existing private key, or re-run this command with the argument ${ORANGE}--new${END}"
-        echo -e "      ${BOLD}${GREY2}./${APP_THIS} --new --name \"Certificate Name\"${END}"
+        echo -e "      ${BOLD}${GREY2}${APP_THIS} --new --name \"Certificate Name\"${END}"
         echo -e
         echo -e "  ${BOLD}You can also specify a password so that you don't have to keep entering it with ${ORANGE}--pass YOUR_PASS${END}"
-        echo -e "      ${BOLD}${GREY2}./${APP_THIS} --new --name \"Certificate Name\" --pass \"YOUR_PASS\"${END}"
+        echo -e "      ${BOLD}${GREY2}${APP_THIS} --new --name \"Certificate Name\" --pass \"YOUR_PASS\"${END}"
         echo -e
         echo -e " ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
         echo -e
@@ -1559,10 +1577,10 @@ if [ -z "${PARAM_NEW_KEYS}" ] || [ "${PARAM_NEW_KEYS}" == "false" ]; then
         echo -e "      ${BOLD}${GREY2}${PATH_DOMAIN_BASE}.*${SSL_KEY_MAIN_ENC}*${END}"
         echo -e
         echo -e "  ${BOLD}You must either supply an existing private key, or re-run this command with the argument ${ORANGE}--new${END}"
-        echo -e "      ${BOLD}${GREY2}./${APP_THIS} --new --name \"Certificate Name\"${END}"
+        echo -e "      ${BOLD}${GREY2}${APP_THIS} --new --name \"Certificate Name\"${END}"
         echo -e
         echo -e "  ${BOLD}You can also specify a password so that you don't have to keep entering it with ${ORANGE}--pass YOUR_PASS${END}"
-        echo -e "      ${BOLD}${GREY2}./${APP_THIS} --new --name \"Certificate Name\" --pass \"YOUR_PASS\"${END}"
+        echo -e "      ${BOLD}${GREY2}${APP_THIS} --new --name \"Certificate Name\" --pass \"YOUR_PASS\"${END}"
         echo -e
         echo -e " ${BLUE}―――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――――${END}"
         echo -e
