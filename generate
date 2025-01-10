@@ -2309,6 +2309,7 @@ openssl pkcs12 -in "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -o
 
 if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl pkcs12 -in \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_DOMAIN_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"${END}"
+    echo -e
 fi
 
 # #
@@ -2322,10 +2323,12 @@ if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}" ]; then
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  rm \"${PATH_DOMAIN_BASE}.${SSL_KEYSTORE_B64}\"${END}"
+        echo -e
     fi
 else
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  Skipped${END}"
+        echo -e
     fi
 fi
 
@@ -2815,6 +2818,7 @@ openssl pkcs12 -in "${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys -out
 
 if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl pkcs12 -in \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_AUTH_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"${END}"
+    echo -e
 fi
 
 # #
@@ -2828,10 +2832,12 @@ if [ -f "${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}" ]; then
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  rm \"${PATH_AUTH_BASE}.${SSL_KEYSTORE_B64}\"${END}"
+        echo -e
     fi
 else
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  Skipped${END}"
+        echo -e
     fi
 fi
 
@@ -3323,6 +3329,7 @@ openssl pkcs12 -in "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}" -clcerts -nokeys
 
 if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
     printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  openssl pkcs12 -in \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_PFX}\" -clcerts -nokeys -out \"${PATH_BITLOCKER_BASE}.${EXT_CRT}\" -passin pass:\"${PWD_IN}\" -password pass:\"${PWD_RAW}\" -passout pass:\"${PWD_OUT}\"${END}"
+    echo -e
 fi
 
 # #
@@ -3336,10 +3343,12 @@ if [ -f "${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}" ]; then
 
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  rm \"${PATH_BITLOCKER_BASE}.${SSL_KEYSTORE_B64}\"${END}"
+        echo -e
     fi
 else
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
         printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  Skipped${END}"
+        echo -e
     fi
 fi
 
