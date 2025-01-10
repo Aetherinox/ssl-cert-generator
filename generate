@@ -2380,7 +2380,7 @@ printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_DOMAIN_BASE}-015${END}" "${
 if [ -n "$PWD_RAW" ] && (( ${#PWD_RAW} > 4 )) ; then
     if [ -f "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
         if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-            printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"${END}"
+            printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cp \"${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}\"${END}"
         fi
         cp "${PATH_DOMAIN_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_DOMAIN_BASE}.${SSL_KEY_SSH_PRIV}"
 
@@ -3460,7 +3460,7 @@ fi
 printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${FILE_BITLOCKER_BASE}-016${END}" "${GREY3}${LNG_STEP_FILE_CREATE}${END}" "${RED}›${END}" "${YELLOW3}${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}${END}"
 if [ -f "${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}" ]; then
     if [ "${PARAM_DEV_ENABLED}" == "true" ]; then
-        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cp \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"${END}"
+        printf '%-30s %-30s %-5s %-40s\n' "  ${ORANGE}${END}" "${GREY3}${END}" "${RED}›${END}" "${GREY2} ↳  cp \"${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}\" \"${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}\"${END}"
     fi
     cp "${PATH_BITLOCKER_BASE}.${SSL_KEY_RSA_PRIV}" "${PATH_BITLOCKER_BASE}.${SSL_KEY_SSH_PRIV_NOPWD}"
 
