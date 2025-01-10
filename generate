@@ -997,32 +997,33 @@ opt_usage()
     printf '  %-5s %-40s\n' "    " "${0} [ ${GREY3}options${END} ]" 1>&2
     printf '  %-5s %-40s\n\n' "    " "${0} [ ${GREY3}--new --algorithm "rsa" --name \"CompanyName\"${END} ] [ ${GREY3}--pass \"YOUR_PASSWD\"${END} ] [ ${GREY3}--version${END} ] [ ${GREY3}--help${END} ]" 1>&2
     printf '  %-5s %-40s\n' "${GREEN}Structure:${END}" "" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} 📁 ${FOLDER_CERTS}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${BLUE}    📁 ${FOLDER_ROOTCA}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${BLUE}       📁 ${FOLDER_ROOT_SUB_CERTS}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${BLUE}       📁 ${FOLDER_ROOT_SUB_CRL}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}          📄 ${FILE_ROOTCA_BASE}.${EXT_CRL}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}          📄 ${FILE_ROOTCA_BASE}.${EXT_CRL}.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${BLUE}       📁 ${FOLDER_ROOT_SUB_GEN}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}          📄 00.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}          📄 01.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}          📄 02.${EXT_PEM}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_CRLNUMBER}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${PARAM_CNF_ROOTCA}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${PARAM_CNF_BITLOCKER}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${EXT_CRT}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_BASE}.${EXT_PFX}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_SERIAL}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3}       📄 ${FILE_ROOTCA_SERIAL}.${EXT_OLD}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${BLUE}    📁 ${FOLDER_DOMAIN}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${BLUE}    📁 ${FOLDER_AUTH}${END}" 1>&2
-    printf '  %-5s %-40s\n' "    " "${GREY3} 📄 ${0}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} 📁 ${BLUE}${FOLDER_CERTS}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_CERTS}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_CRL}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRL}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  └─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRL}.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📁 ${BLUE}${FOLDER_ROOT_SUB_GEN}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}00.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  ├─ 📄 ${WHITE}01.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  │  └─ 📄 ${WHITE}02.${EXT_PEM}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_CRLNUMBER}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_CRLNUMBER}.${EXT_OLD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_ATTR}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_DB}.${EXT_TXT}.${EXT_OLD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${PARAM_CNF_ROOTCA}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${PARAM_CNF_BITLOCKER}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_CRT}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_ENC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${SSL_KEY_MAIN_UNC}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_BASE}.${EXT_PFX}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  ├─ 📄 ${WHITE}${FILE_ROOTCA_SERIAL}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} │  └─ 📄 ${WHITE}${FILE_ROOTCA_SERIAL}.${EXT_OLD}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_DOMAIN}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_AUTH}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} ├─ 📁 ${BLUE}${FOLDER_BITLOCKER}${END}" 1>&2
+    printf '  %-5s %-40s\n' "    " "${GREY3} └─ 📄 ${WHITE}${APP_THIS}${END}" 1>&2
     printf '  %-5s %-40s\n' "" "" 1>&2
     printf '  %-5s %-40s\n' "${GREEN}Options:${WHITE}" "" 1>&2
     printf '  %-5s %-24s %-40s\n' "    " "-n,  --new" "Generate new keys" 1>&2
