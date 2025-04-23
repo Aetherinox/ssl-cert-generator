@@ -1,10 +1,10 @@
 # SSL Certificates & Generator <!-- omit in toc -->
 
-<br />
+<br>
 
 ---
 
-<br />
+<br>
 
 - [About](#about)
   - [Certificate Types](#certificate-types)
@@ -13,6 +13,9 @@
     - [Authentication Authority (SSL)](#authentication-authority-ssl)
     - [Encryption Authority (Bitlocker)](#encryption-authority-bitlocker)
   - [Key Types](#key-types)
+- [Quick Run](#quick-run)
+  - [Normal Mode](#normal-mode)
+  - [Mixed Mode](#mixed-mode)
 - [Setup](#setup)
   - [Setup Using Git Repo](#setup-using-git-repo)
   - [Setup Manually](#setup-manually)
@@ -24,7 +27,7 @@
     - [Legend](#legend)
     - [RootCA](#rootca)
     - [Domain Authority](#domain-authority-1)
-- [Arguments](#arguments)
+- [Options](#options)
 - [Commands](#commands)
   - [Help](#help)
   - [New](#new)
@@ -50,19 +53,21 @@
       - [RSA](#rsa)
       - [ECC](#ecc)
     - [Existing Key Generation](#existing-key-generation)
-      - [Option 1: --import argument](#option-1---import-argument)
+      - [Option 1: --import option](#option-1---import-option)
       - [Option 2: Manual Import](#option-2-manual-import)
 
 
-<br />
+<br>
 
 ---
 
-<br />
+<br>
 
 ## About
 
-This bash utility will generate the following types of certificates. See a larger explaination of these certificates in the subsection [Certificate Types](#certificate-types):
+This bash utility will generate the following types of certificates. See a larger explaination of these certificates in the subsection [Certificate Types](#certificate-types). The following lists the algorithm that will be used for each certificate and key if you use `--mixed` mode.
+
+<br>
 
 - **Root Certificate Authority (RSA 4096)**
   - Signs all certificates
@@ -77,13 +82,13 @@ This bash utility will generate the following types of certificates. See a large
   - Bitlocker & EFS encryption cert and keys
   - Located in `📁 bitlocker` folder
 
-<br />
+<br>
 
 ### Certificate Types
 
 This subsection explains the different certificate types:
 
-<br />
+<br>
 
 #### rootCA Authority
 
@@ -97,8 +102,8 @@ basicConstraints        = critical, CA:true
 keyUsage                = critical, digitalSignature, cRLSign, keyCertSign
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 #### Domain Authority
 
@@ -113,8 +118,8 @@ keyUsage                = critical, digitalSignature, keyEncipherment, keyAgreem
 extendedKeyUsage        = critical, serverAuth, clientAuth
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 #### Authentication Authority (SSL)
 
@@ -129,14 +134,21 @@ basicConstraints        = CA:false, pathlen:0
 # extendedKeyUsage      = critical, serverAuth, clientAuth
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 #### Encryption Authority (Bitlocker)
 These certs / keys can be utilized for things such as Bitlocker encryption and EFS (Windows encrypted filesystem). They are ready to be imported into a security device such as a Yubikey, and will typically go into `Slot 9D`. This can be achieved by using the [Yubikey Manager](https://www.yubico.com/support/download/yubikey-manager/) application
 
-<br />
-<br />
+```ini
+[ x509_9d_bitlocker ]
+basicConstraints        = critical, CA:false, pathlen:0
+keyUsage                = critical,nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement
+extendedKeyUsage        = critical,serverAuth, clientAuth, emailProtection, msSGC, msEFS, msEFSR, nsSGC, msEFSRecovery, driveEncryption, driveRecovery, msSmartcardLogin, secureShellClient, secureShellServer, rda, gpgUsageCert, gpgUsageSign, gpgUsageEncr, gpgUsageAuth, msAuthenticode
+```
+
+<br>
+<br>
 
 ### Key Types
 
@@ -145,21 +157,21 @@ This bash utility allows you to either generate all of your certificates / keys 
 - **RSA 4096** is used for the Root certificate authority and is common practice. 
 - **ECC 384** is used for all other non-root certs which will be issued by the Root Certificate authority due to smaller keys with better security and more modern.
 
-<br />
+<br>
 
-Using this bash utility, you can either generate a mixed RSA and ECC pair, or you can have all certificates use RSA or ECC and not mix. This is specified as an argument when you execute the `generate` bash script.
+Using this bash utility, you can either generate a mixed RSA and ECC pair, or you can have all certificates use RSA or ECC and not mix. This is specified as an option when you execute the `generate` bash script.
 
-To generate a mix of RSA root with ECC subkeys, use the `generate --mixed` argument:
+To generate a mix of RSA rootCA with ECC subkeys, use the `generate --mixed` option:
 
 ```console
  -M,  --mixed       forces the rootCA to use RSA 4096; all subkeys will use ECC secp384r1
-                    cannot be used in combination with argument --algorithm
-                    change RSA bits with argument --bits <num>
-                    change ECC curve with argument --curve <value>
+                    cannot be used in combination with option --algorithm
+                    change RSA bits with option --bits <num>
+                    change ECC curve with option --curve <value>
 
 ```
 
-<br />
+<br>
 
 This project has **four** main files which allow you to generate RSA keys, ECC keys, or a combination of both. This is specified depending on what command you run:
 
@@ -170,7 +182,7 @@ This project has **four** main files which allow you to generate RSA keys, ECC k
 | `rootCA/bitlocker-rsa.cnf` | Creates Bitlocker encryption cert and keys using RSA        |     |
 | `rootCA/bitlocker-ecc.cnf` | Creates Bitlocker encryption cert and keys using ECC        |     |
 
-<br />
+<br>
 
 > [!NOTE]
 > The `rootCA-*.cnf` is responsible for creating:
@@ -178,13 +190,89 @@ This project has **four** main files which allow you to generate RSA keys, ECC k
 >   - Domain Authority subkey
 >   - Authentication Authority subkey
 >
-> There is a **separate** `.cnf` file for Bitlocker
+> 
+> The `bitlocker-*.cnf` is responsible for creating:
+>   - Encryption Authority key
 
-<br />
+<br>
 
 ---
 
-<br />
+<br>
+
+## Quick Run
+
+This section gives brief commands on how to generate new keys using both **Normal Mode** and **Mixed Mode**. First, clone the repository files:
+
+```shell
+git clone https://github.com/Aetherinox/ssl-cert-generator.git .
+```
+
+<br>
+
+Set the permissions:
+
+```shell
+sudo chmod +x generate
+```
+
+<br>
+
+Create a symlink so that you can access the command from any folder:
+
+```shell
+sudo ln -s /path/to/generate /usr/local/bin
+```
+
+<br>
+
+### Normal Mode
+
+This mode generates keys with all the same specified algorithm.
+
+```shell
+# RSA
+generate \
+  --new  \
+  --algorithm "rsa" \
+  --bits 4096 \
+  --name "Domain.lan" \
+  --pass "PASS" \
+  --passin "PASS" \
+  --passout "PASS"
+
+# ECC
+generate \
+  --new  \
+  --algorithm "ecc" \
+  --curve "secp384r1" \
+  --name "Domain.lan" \
+  --pass "PASS" \
+  --passin "PASS" \
+  --passout "PASS"
+```
+
+<br>
+
+### Mixed Mode
+
+Mixed Mode (`--mixed`) will generate the rootCA using RSA 4096, and all subkeys will be generated using ECC with curve secp384r1.
+
+```shell
+generate \
+  --new \
+  --mixed \
+  --pass "PASS" \
+  --passin "PASS" \
+  --passout "PASS" \
+  --name "Domain.lan"
+```
+
+<br>
+
+---
+
+<br>
 
 ## Setup
 
@@ -192,7 +280,7 @@ We need to set up a few folders which will serve as the location where we will g
 - [Linux](https://docs.openiam.com/docs-4.2.1.3/appendix/2-openssl)
 - [Windows](https://cloudzy.com/blog/install-openssl-on-windows/)
 
-<br />
+<br>
 
 ### Setup Using Git Repo
 
@@ -202,7 +290,7 @@ Download the contents of this repo to your local machine.
 git clone https://github.com/Aetherinox/ssl-cert-generator.git .
 ```
 
-<br />
+<br>
 
 Set the correct permissions:
 
@@ -210,7 +298,7 @@ Set the correct permissions:
 sudo chmod +x generate
 ```
 
-<br />
+<br>
 
 Add the `generate` file to your `/usr/local/bin` so that it can be accessed from any directory
 
@@ -218,7 +306,7 @@ Add the `generate` file to your `/usr/local/bin` so that it can be accessed from
 sudo ln -s /path/to/generate /usr/local/bin
 ```
 
-<br />
+<br>
 
 To remove the symlink
 
@@ -226,8 +314,8 @@ To remove the symlink
 sudo rm /usr/local/bin/generate
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Setup Manually
 
@@ -250,11 +338,11 @@ On your computer, create a new folder named `certificates`, within that folder, 
 📄 generate.sh
 ```
 
-<br />
+<br>
 
 To create the above folders / structure, run the commands below:
 
-<br />
+<br>
 
 #### Windows
 
@@ -266,7 +354,7 @@ type nul > "certificates/rootCA/index.txt"
 type nul > "certificates/rootCA/rootCA.cnf"
 ```
 
-<br />
+<br>
 
 #### Linux
 
@@ -286,7 +374,7 @@ touch "certificates/rootCA/bitlocker-ecc.cnf"
 chmod 600 "certificates/rootCA/index.txt"
 ```
 
-<br />
+<br>
 
 You will then need to add the `generate` bash code from wherever you are getting the source from (such as Obsidian.md). Once you have the code added to the `generate` file; set the permissions:
 
@@ -294,7 +382,7 @@ You will then need to add the `generate` bash code from wherever you are getting
 sudo chmod +x generate
 ```
 
-<br />
+<br>
 
 Add the `generate` file to your `/usr/local/bin` so that it can be accessed from any directory
 
@@ -302,7 +390,7 @@ Add the `generate` file to your `/usr/local/bin` so that it can be accessed from
 sudo ln -s /path/to/generate /usr/local/bin
 ```
 
-<br />
+<br>
 
 To remove the symlink
 
@@ -310,11 +398,11 @@ To remove the symlink
 sudo rm /usr/local/bin/generate
 ```
 
-<br />
+<br>
 
 ---
 
-<br />
+<br>
 
 ## Customize
 
@@ -358,7 +446,7 @@ initials                        = Certificate Initials
 initials                        = ocg-ssl-rootCA
 ```
 
-<br />
+<br>
 
 Change the values above to whatever company name or email address you wish to see on your SSL certificate.
 Next, we will define the domains / DNS that our certificate will be good for. Within the same file `/certificates/rootCA/rootCA-*.cnf`, look for the following lines:
@@ -385,11 +473,11 @@ email.1                         = you1@domain.com
 email.2                         = you2@domain.com
 ```
 
-<br />
+<br>
 
 These lines define what domain / DNS your certificate will be good for. If you were to try and use this certificate on a domain that is **NOT** in the list above, your browser will return an error such as `NET:ERR_CERT_COMMON_NAME_INVALID` or `SSL_ERROR_UNRECOGNIZED_NAME_ALERT`.
 
-<br />
+<br>
 
 The rest of the file `/certificates/rootCA/rootCA-*.cnf` contains mostly things that you should not modify. Throughout the file, you may see values that look like links, such as:
 
@@ -414,15 +502,15 @@ crlDistributionPoints           = URI:http://ssl.domain.lan/rsa/domain.crl,URI:h
 authorityInfoAccess             = OCSP;URI:http://ssl.domain.lan/ocsp, caIssuers;URI:http://ssl.domain.lan/rsa/rootCA.crt
 ```
 
-<br />
+<br>
 
 You may change anything above that appears to go to: `domain.com`.  This guide is not going to go into detail about each property individually, but there is plenty of information online as to what each one does.
 
-<br />
+<br>
 
 ---
 
-<br />
+<br>
 
 ## Generate
 
@@ -432,49 +520,59 @@ After you've completed the previous steps, it is time to generate your new SSL c
 sudo chmod +x generate
 ```
 
-<br />
+<br>
 
-Now we can run the command to generate. Notice that we are passing the `--mixed` parameter. This means that our rootCA cert and key will be made using `RSA`; our subkeys for the domain, SSL, and Bitlocker will be generated using `ECC`.
+Now we can run the command to generate. Notice that we are passing the `--mixed` option. This means that our rootCA cert and key will be made using `RSA`; our subkeys for the domain, SSL, and Bitlocker will be generated using `ECC`.
 
 ```shell
-generate --new --mixed \
+generate \
+  --new \
+  --mixed \
   --pass "PASS" \
   --passin "PASS" \
   --passout "PASS" \
   --name "Domain.lan"
 ```
 
-<br />
+<br>
 
 > [!DANGER]
 > **Remember Your Password**
 > Write down the password you have chosen for your SSL certificate. If you forget the password, you will be unable to create any additional private keys later. You will also be unable to utilize the `.pfx` file.
 
-<br />
+<br>
 
 A series of files are going to be generated. Don't feel over-whelmed, some of these files you may never use, and you can always generate new copies later utilizing OpenSSL. There are plenty of tutorials online to explain how to use OpenSSL..
 
 A list of files have been provided below. A legend has been provided to explain what the abbreviations in the files mean:
 
-<br />
+<br>
 
 ### File List
 
 After generating your new keys; the following files will be generated and places in your `certificates` folder:
 
-<br />
+<br>
 
 #### Legend
-- `enc`:  Encrypted 
-- `enc`:  Unencrypted
 
-<br />
+When generating new certificates and keys; the filenames may contain any of the following abbreviations:
+
+| Abbreviation | Description |
+| --- | --- |
+| `enc` | Encrypted private key |
+| `unc` | Unencrypted private key |
+| `pub` | Public key |
+| `priv` | Private key |
+| `crt` | Certificate |
+
+<br>
 
 #### RootCA
 
 The following files are generated in relation to the **rootCA Certificate Authority**:
 
-<br />
+<br>
 
 | File | Description |
 | --- | --- |
@@ -483,13 +581,13 @@ The following files are generated in relation to the **rootCA Certificate Author
 | `rootCA.key.main-01.unc.priv.pem` | Private Key (Unencrypted) |
 | `rootCA.keystore.normal.pfx` | Private Keystore |
 
-<br />
+<br>
 
 #### Domain Authority
 
 The following files are generated in relation to the **Domain Authority Certificate**:
 
-<br />
+<br>
 
 | File | Description |
 | --- | --- |
@@ -509,7 +607,7 @@ The following files are generated in relation to the **Domain Authority Certific
 | `domain_fullchain.pem` | Full Certificate Authority + Domain Certificate |
 | `domain.sha1.key` | SHA1. Paste into Duplicati Global Settings |
 
-<br />
+<br>
 
 The following files from above are **private keys** you can use, both encrypted and unencrypted. The bash script generates multiple so that you can use them on various different things. These private keys can be used to set up SSH, SSL on websites, or set up a self-signed certificate for applications like Duplicati, Syncthing, etc.
 
@@ -518,100 +616,116 @@ The following files from above are **private keys** you can use, both encrypted 
 - `key.main-02.enc.priv.pem`
 - `key.main-02.unc.priv.pem`
 
-<br />
+<br>
 
 The following files are **private keys and certificates** combined into one file:
 
 - `keycert.main-01.enc.priv.pem`
 - `keycert.main-01.unc.priv.pem`
 
-<br />
+<br>
 
 The **fullchain** certificate file will be used to set up SSL with your websites, as well as the individual certificate files for your Certificate Authority and domain certificate:
 
-- `fullchain.pe`
+- `domain.fullchain.crt`
 - `domain.crt`
 - `rootCA.crt`
 
-<br />
+<br>
 
 The **OpenSSH** public file is used for OpenSSH connections:
 
 - `key.openssh.pub`
 
-<br />
+<br>
 
 The **SHA1** file can be used with applications like Duplicati:
 
 - `sha1.key`
 
-<br />
+<br>
 
 The **keystore** files are a password protected file which contains your private key, public key, and certificate. The base64 encrypted keystore can be used for people who wish to add SSL to applications via Github Workflow.
 
 - `keystore.normal.pfx`
 - `keystore.base64.pfx`
 
-<br />
+<br>
 
 The **Certificate Signing Request** is a file generated for your domain certificate. It is signed with your Certificate Authority _(rootCA)_. You can also send the `.csr` file off to other Certificate Authorities such as Veracrypt to be signed by them:
 
 - `domain.csr`
 
-<br />
+<br>
 
 ---
 
-<br />
+<br>
 
-## Arguments
+## Options
 
-This utility has the following available arguments you can pass:
-
-<br />
-
-| Argument | Description |
-| --- | --- |
-| <small>`-n, --new`</small> | <small>Generates new keys if existing private keys do not exist in the base folders `rootCA`, `domain`, `auth`, and `bitlocker`</small> |
-| <small>`-f, --config`</small> | <small>OpenSSL config file to load <br /><br /> Default: `rootCA-rsa.cnf` </small> |
-| <small>`-F, --config-bitlocker`</small> | <small>OpenSSL config file to load for bitlocker keys/cert <br /><br /> Default: `bitlocker-rsa.cnf` </small> |
-| <small>`-i, --import`</small> | <small>Import existing RSA or ECC private key, and generate new public keys and certificates based on the private key. <br/><br /> must specify a private key with an intact header. the following are acceptable: <br/> <br /> `BEGIN ENCRYPTED PRIVATE KEY` <br /> `BEGIN PRIVATE KEY` <br /> `BEGIN EC PRIVATE KEY`</small> |
-| <small>`-a, --algorithm`</small> | <small>Algorithm to use for key generation. These are the values available within OpenSSL. <br /> `ecc` <br /> `rsa` <br /><br /> cannot be used in combination with the argument `--mixed` <br /><br /> Default: `rsa` </small> |
-| <small>`-V, --curve`</small> | <small>ECC curve; accepts all curves available through OpenSSL <br /> `secp384r1` <br /> `secp521r1` <br /> `sect571k1` <br /> `c2pnb368w1` <br /> `c2tnb431r1` <br /> `prime256v1` <br /><br /> Default: `secp384r1` </small> |
-| <small>`-b, --bits`</small> | <small>Specifies the number of bits to use with an RSA key <br /><br /> Default: `4096`</small> |
-| <small>`-dr, --digest-root`</small> | <small>Message digest to use with the rootCA `SHA224` <br /> `SHA256` <br /> `SHA384` <br /> `SHA512` <br /><br /> Default: `sha512` </small> |
-| <small>`-ds, --digest-sub`</small> | <small>Message digest to use with sub-keys <br /> `SHA224` <br /> `SHA256` <br /> `SHA384` <br /> `SHA512` <br /><br /> Default: `sha512` </small> |
-| <small>`-M, --mixed`</small> | <small>Toggles rootCA cert/key to be generated using `RSA 4096`, all sub-keys will use ECC `secp384r1` <br /><br /> cannot be used in combination with the argument `--algorithm` </small> |
-| <small>`-N, --friendlyname`</small> | <small>Friendly name to use for certificate <br/><br/> Default: `Self-hosted`</small> |
-| <small>`-P, --pass`</small> | <small>Password to use for certs and keys</small> |
-| <small>`-I, --passin`</small> | <small>Password to use for imported keys, and private keys needed to make new keys</small> |
-| <small>`-O, --passout`</small> | <small>Password to use when creating a new private key from an existing, this password is applied to the newer keys</small> |
-| <small>`-H, --homeFolder`</small> | <small>Set the home folder <br/> This is the folder where the `generate` app currently resides. <br/><br/> Default: `${PWD}` </small> |
-| <small>`-C, --certsFolder` </small> | <small>Set the certs folder <br/>Re-names the `certificates` folder. <br/><br/> Default: `certificates` </small> |
-| <small>`-R, --rootcaFolder`</small> | <small>Set the rootCA folder <br/><br/> Default: `rootCA` </small> |
-| <small>`-D, --domainFolder`</small> | <small>Set the domain folder <br /><br/> Default: `domain` </small> |
-| <small>`-d, --days`</small> | <small>Certificate expiration time in days <br /><br/> Default: `36500` </small> |
-| <small>`-t, --comment`</small> | <small>specify a comment to add to RSA and OpenSSH keys <br /><br/> Default: `OCG 1.0.0.0` </small> |
-| <small>`-c, --clean`</small> | <small>Remove all files, but keep OpenSSL config `rootCA.cnf` and main private `.pem` keys </small> |
-| <small>`-w, --wipe`</small> | <small>Remove every file in `certificates` / `certsFolder` folder, `rootcaFolder` OpenSSL config `rootCA.cnf` excluded and will remain</small> |
-| <small>`-v, --vars`</small> | <small>List all variables / paths</small> |
-| <small>`-T, --tree`</small> | <small>Shows an example of the files you should have when using this generator</small> |
-| <small>`-s, --status`</small> | <small>Output a list of certs & keys generated to check for all files</small> |
-| <small>`-v, --version`</small> | <small>Current version of this generator</small> |
-| <small>`-x, --dev`</small> | <small>Developer mode</small> |
-| <small>`-z, --help`</small> | <small>Show this help menu</small> |
+Options are special flags you can append on to the base command in order to customize how this utility generates certificates and keys. Some options simply represent `true | on` or `false | off` by supplying the `--option`. While other options also expect an option after the option is declared.
 
 <br />
+
+```
+generate \
+   --parameter1 <argument1> \
+   --parameter2 <argument2>
+
+generate \
+   --config-bitlocker bitlocker-rsa.cnf \
+   --algorithm rsa
+```
+
+<br />
+
+This utility has the following available options you can pass. Any option listed below **without** a default value represents a simple `on` or `off` option with no additional arguments needed after the option is declared.
+
+<br>
+
+| Options | Description | Default Value |
+| --- | --- | --- |
+| <small>`-n, --new`</small> | <small>Generates new keys if existing private keys do not exist in the base folders `📁 rootCA`, `📁 domain`, `📁 auth`, and `📁 bitlocker`</small> | <small></small> |
+| <small>`-f, --config`</small> | <small>OpenSSL config file to load</small> | <small>`rootCA-rsa.cnf`</small> |
+| <small>`-F, --config-bitlocker`</small> | <small>OpenSSL config file to load for bitlocker keys/cert</small> | <small>`bitlocker-rsa.cnf`</small> |
+| <small>`-i, --import`</small> | <small>Import existing RSA or ECC private key, and generate new public keys and certificates based on the private key. <br/>Must specify a private key with an intact header. the following are acceptable: <br/> <br> `BEGIN ENCRYPTED PRIVATE KEY` <br> `BEGIN PRIVATE KEY` <br> `BEGIN EC PRIVATE KEY`</small> | <small></small> |
+| <small>`-a, --algorithm`</small> | <small>Algorithm to use for key generation. These are the values available within OpenSSL. Cannot be used in combination with the option `--mixed` <br><br> `ecc`, `rsa`</small> | <small>`rsa`</small> |
+| <small>`-V, --curve`</small> | <small>ECC curve; accepts all curves available through OpenSSL <br><br>`secp384r1`, `secp521r1`, `sect571k1`, `c2pnb368w1`, `c2tnb431r1`, `prime256v1`</small> | <small>`secp384r1`</small> |
+| <small>`-b, --bits`</small> | <small>Specifies the number of bits to use with an RSA key</small> | <small>`4096`</small> |
+| <small>`-dr, --digest-root`</small> | <small>Message digest to use with the rootCA <br><br>`SHA224`, `SHA256`, `SHA384`, `SHA512`</small> | <small>`sha512`</small> |
+| <small>`-ds, --digest-sub`</small> | <small>Message digest to use with sub-keys <br><br> `SHA224`, `SHA256`, `SHA384`, `SHA512`</small> | <small>`sha512`</small> |
+| <small>`-M, --mixed`</small> | <small>Toggles rootCA cert/key to be generated using `RSA 4096`, all sub-keys will use ECC `secp384r1` <br>Cannot be used in combination with the option `--algorithm` </small> | <small></small> |
+| <small>`-N, --friendlyname`</small> | <small>Friendly name to use for certificate</small> | <small>`Self-hosted`</small> |
+| <small>`-P, --pass`</small> | <small>Password to use for certs and keys</small> | <small></small> |
+| <small>`-I, --passin`</small> | <small>Password to use for imported keys, and private keys needed to make new keys</small> | <small></small> |
+| <small>`-O, --passout`</small> | <small>Password to use when creating a new private key from an existing, this password is applied to the newer keys</small> | <small></small> |
+| <small>`-H, --homeFolder`</small> | <small>Set the home folder <br/> This is the folder where the `generate` app currently resides.</small> | <small>`${PWD}`</small> |
+| <small>`-C, --certsFolder` </small> | <small>Set the certs folder <br/>Re-names the `certificates` folder.</small> | <small>`certificates`</small> |
+| <small>`-R, --rootcaFolder`</small> | <small>Set the rootCA folder</small> | <small>`rootCA`</small> |
+| <small>`-D, --domainFolder`</small> | <small>Set the domain folder</small> | <small>`domain`</small> |
+| <small>`-d, --days`</small> | <small>Certificate expiration time in days</small> | <small>`36500`</small> |
+| <small>`-t, --comment`</small> | <small>specify a comment to add to RSA and OpenSSH keys</small> | <small>`OCG 1.1.0.0`</small> | <small></small> |
+| <small>`-c, --clean`</small> | <small>Remove all files except config `📄 rootCA.cnf` and main private `📄 .pem` keys </small> | <small></small> |
+| <small>`-w, --wipe`</small> | <small>Remove every file in the folders `📁 certificates`, `📁 certsFolder`, and `📁 rootcaFolder`.<br>OpenSSL config `📄 rootCA.cnf` excluded and will remain</small> | <small></small> |
+| <small>`-v, --vars`</small> | <small>List all variables / paths</small> | <small></small> |
+| <small>`-T, --tree`</small> | <small>Shows an example of the files you should have when using this generator</small> | <small></small> |
+| <small>`-s, --status`</small> | <small>Output a list of certs & keys generated to check for all files</small> | <small></small> |
+| <small>`-v, --version`</small> | <small>Current version of this generator</small> | <small></small> |
+| <small>`-x, --dev`</small> | <small>Developer mode; enables verbose logging</small> | <small></small> |
+| <small>`-z, --help`</small> | <small>Show this help menu</small> | <small></small> |
+
+<br>
 
 ---
 
-<br />
+<br>
 
 ## Commands
 
 This utility includes a large list of options and commands. A complete list can be found by executing the command `generator --help`. Some of the most important commands are outlined below:
 
-<br />
+<br>
 
 ### Help
 
@@ -623,7 +737,7 @@ Displays helpful information about the script, including all available commands.
 generator --help
 ```
 
-<br />
+<br>
 
 `--help, -z` outputs the following:
 
@@ -669,8 +783,8 @@ generator --help
         -z,  --help              Show this help menu                     
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### New
 <small>`-n, --new`</small>
@@ -681,14 +795,14 @@ The new command generates new keys and certificates, including the main private 
 generate --new
 ```
 
-<br />
+<br>
 
 If you do not wish to generate new private keys, and want to use your own; you must ensure you have the following files in the locations specified below:
 
 - `certificates/rootCA/rootCA.key.main-01.enc.priv.pem`
 - `certificates/domain/domain.key.main-01.enc.priv.pem`
 
-<br />
+<br>
 
 If you have the above private keys in place, you can exclude the `-n, --new` arguments, and new public keys and certificates will be generated based on the private keys.
 
@@ -696,46 +810,46 @@ If you have the above private keys in place, you can exclude the `-n, --new` arg
 generate --comment "My Existing Key" --name "Original Key"
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Algorithm
 <small>`--algorithm, -a`</small>
 
-The **algorithm** parameter allows you to specify whether you generate RSA based keys, or ECC / ECDSA.
+The `algorithm` option allows you to specify whether you will generate RSA or ECC / ECDSA keys & certs.
 
-For ECC keys, use this parameter in combination with `--curve`; otherwise the default curve will be `secp384r1`.
+For ECC keys, use this option in combination with `--curve`; otherwise the default curve will be `secp384r1`.
 
 ```shell
 generate --algorithm ecc --curve secp384r1
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Curve
 <small>`--curve, -V`</small>
 
-The **curve** parameter allows you to specify which curve to use for ECC / ECDSA. This parameter accepts the same values offered by OpenSSL.
+The `curve` option allows you to specify which curve to use for ECC / ECDSA. This option accepts the same values offered by OpenSSL.
 
 ```shell
 generate --algorithm ecc --curve secp384r1
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Bits
 <small>`--bits, -b`</small>
 
-The **curve** parameter allows you to specify which curve to use for ECC / ECDSA. This parameter accepts the same values offered by OpenSSL.
+The `bits` option allows you tp specify the key size for RSA generated keys.
 
 ```shell
-generate --algorithm ecc --curve secp384r1
+generate --algorithm rsa --bits 4096
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Folders
 
@@ -759,11 +873,11 @@ By default, this script utilizes the following structure:
 📄 generate
 ```
 
-<br />
+<br>
 
-Parameters are provided so that these folder names can be changed.
+Options are provided so that these folder names can be changed.
 
-<br />
+<br>
 
 #### homeFolder
 
@@ -775,7 +889,7 @@ By default, the generator will run in whatever folder the script was called from
 generator --homeFolder /path/to/folder
 ```
 
-<br />
+<br>
 
 #### certsFolder
 
@@ -787,7 +901,7 @@ Changes the `certificates` folder name. The following example will use the folde
 generate --certsFolder certs
 ```
 
-<br />
+<br>
 
 #### rootcaFolder
 
@@ -799,7 +913,7 @@ Changes the `rootCA` folder name. The following example will use the folder `aut
 generate --rootcaFolder authority
 ```
 
-<br />
+<br>
 
 #### domainFolder
 
@@ -811,18 +925,18 @@ Changes the `domain` folder name. The following example will use the folder `myd
 generate --rootcaFolder mydomain.com
 ```
 
-<br />
+<br>
 
 ### Passwords
 
-This utility uses the same structure that OpenSSL does when dealing with the parameters:
+This utility uses the same structure that OpenSSL does when dealing with the options:
 - pass
 - passin
 - passout
 
-<br />
+<br>
 
-Several commands accept password arguments, typically using -passin and -passout for input and output passwords respectively. These allow the password to be obtained from a variety of sources. Both of these options take a single argument
+Several commands accept password arguments, typically using -passin and -passout for input and output passwords respectively. These allow the password to be obtained from a variety of sources. Both of these options take a single option
 
 If you are attempting to generate new files based on an existing key which is password protected; you must supply that password as part of the command.
 
@@ -830,7 +944,7 @@ If you are attempting to generate new files based on an existing key which is pa
 generate --new --pass "YourExistingPassword"
 ```
 
-<br />
+<br>
 
 If you are generating certs based on an existing key which has a password, and you'd also like your new keys to have a different password, specify `--passout`. 
 
@@ -840,21 +954,21 @@ This means your input password protected key will be specified by `--pass`, and 
 generate --pass "YourExistingPassword" --passout "YourNewPassword"
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Friendly Name
 
 <small>`--friendlyname, -N`</small>
 
-This specifies the "friendly name" for the certificates and private key. This name is typically displayed in list boxes by software importing the file.
+This specifies the "friendly name" for the certificates and private key. This name is typically displayed in list boxes by software importing the file. Microsoft Windows will use this name when you view certificates and keys in your Windows Certificate Manager.
 
 ```shell
 generate --new --name "My certificate" --pass "YourExistingPassword"
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Days / Expiration
 
@@ -866,21 +980,21 @@ Specifies how long until the created certificate expires. The following example 
 generate --new --name "My certificate" --days 1095 --pass "YourExistingPassword"
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Comment
 
 <small>`--comment, -t`</small>
 
-Defines a comment to be added to RSA keys generated. If a comment is not specified, comment will default to `OCG 1.x.x`; which stands for **OpenSSL Certificate Generator**.
+Defines a comment to be added to the end of OpenSSH files. If a comment is not specified, comment will default to `OCG 1.x.x`; which stands for **OpenSSL Certificate Generator**.
 
 ```shell
 generate --new --name "My certificate" --days 1095 --comment "Work keys" --pass "YourExistingPassword"
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Wipe & Clean
 
@@ -890,14 +1004,14 @@ We provide you with two different commands:
 - `--wipe, -w`
 - `--clean, -C`
 
-<br />
-<br />
+<br>
+<br>
 
 #### Clean
 
 <small>`--clean, -c`</small>
 
-The clean command will destroy all files except for the following:
+The clean command will destroy **all** files except for the following:
 
 - 📄 `rootCA.cnf` <small><small>(OpenSSL config)</small></small>
 - 📄 `rootCA.key.main-01.enc.priv.pem` <small><small>Private key - Encrypted</small></small>
@@ -905,31 +1019,31 @@ The clean command will destroy all files except for the following:
 - 📄 `domain.key.main-01.enc.priv.pem` <small><small>Private key - Encrypted</small></small>
 - 📄 `domain.key.main-01.unc.priv.pem` <small><small>Private key - Unencrypted</small></small>
 
-<br />
+<br>
 
 ```shell
 generate --clean
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 #### Wipe
 
 <small>`--wipe, -w`</small>
 
-The wipe command will destroy all files except for the following:
+The wipe command will destroy **all** files except for the following:
 
 - 📄 `rootCA.cnf` <small><small>(OpenSSL config)</small></small>
 
-<br />
+<br>
 
 ```shell
 generate --wipe
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 #### Variables
 
@@ -937,13 +1051,13 @@ generate --wipe
 
 The variables command outputs a list of stored variables and their values. Mainly this is used for development purposes only.
 
-<br />
+<br>
 
 ```shell
 generate --vars
 ```
 
-<br />
+<br>
 
 `--vars, -v` outputs the following:
 
@@ -979,21 +1093,21 @@ generate --vars
     ↳ 🔑 $SSL_CERT_FULLCHAIN                fullchain.pem                  
 ```
 
-<br />
+<br>
 
 ### Status
 
 <small>`--status, -s`</small>
 
-The status command will scan the working directory to detect if all of the files generated by this script are indeed found.
+The `status` option will scan the working directory to detect if all of the files generated by this script are indeed found.
 
-<br />
+<br>
 
 ```shell
 generate --status
 ```
 
-<br />
+<br>
 
 `--status, -s` outputs the following:
 
@@ -1059,14 +1173,14 @@ generate --status
     ↳ 🔑 certificates/rootCA/crl/9a.crl                                       ✔️
 ```
 
-<br />
-<br />
+<br>
+<br>
 
 ### Modes
 
 The script comes with two modes:
 
-<br />
+<br>
 
 1. **[New Key Generation](#new-key-generation)**
       - This mode generates entirely new keys, both private and public; as well as new certificates. 
@@ -1076,9 +1190,9 @@ The script comes with two modes:
     - This mode allows you to import your own private keys which will be used in order to generate new public keys and certificates.
     - This is useful for users who wish to keep their original private keys, but re-generate or renew.
 
-<br />
+<br>
 
-<br />
+<br>
 
 #### New Key Generation
 
@@ -1086,7 +1200,7 @@ The script comes with two modes:
 
 This mode generates entirely new keys, both private and public; as well as new certificates. If you have existing private keys you wish to generate new public keys or certificates for; this is **not** the setting you should use. See [Existing Key Generation](#existing-key-generation).
 
-<br />
+<br>
 
 We give **two** different options for algorithms:
 
@@ -1094,7 +1208,7 @@ We give **two** different options for algorithms:
 
 - **ECC** is a given point on a curve. This is calculated as a base point "multiplied" by a secret number, modulo the field prime. It is normally 256 bits in length (a 256-bit ECC key is equivalent to a 3072-bit RSA key), making it more secure and able to offer stronger anti-attack capabilities. Moreover, the computation of ECC is faster than RSA, and thus it offers higher efficiency and consumes fewer server resources.
 
-<br />
+<br>
 
 ##### RSA
 By default, the `-n, --new` flag defaults to the RSA algorithm. To generate brand new keys, you must append `-n, --new` to the command:
@@ -1103,7 +1217,7 @@ By default, the `-n, --new` flag defaults to the RSA algorithm. To generate bran
 generate --new
 ```
 
-<br />
+<br>
 
 You may also specify the RSA algorithm, even though it is default:
 
@@ -1111,39 +1225,40 @@ You may also specify the RSA algorithm, even though it is default:
 generate --new --algorithm rsa
 ```
 
-<br />
+<br>
 
-On top of defining the algorithm, you can also specify the bits for RSA. By default, this parameter is set to `4096`.
+On top of defining the algorithm, you can also specify the bits for RSA. By default, this option is set to `4096`.
 
 ```shell
 generate --new --algorithm rsa --bits 4096
 ```
 
-<br />
+<br>
 
-If you wish for your keys to have a password, you must supply one using the `-P, --pass` argument.
+If you wish for your keys to have a password, you must supply one using the `-P, --pass` option.
 
 ```shell
 generate --new --algorithm rsa --bits 4096 --pass "YourPassword"
 ```
 
-<br />
+<br>
 
 If you are handling more complex setups and generating new keys based on old private keys, you can specify `--passin` and `--passout`
 
-<br />
+<br>
 
-If you wish for your keys to have a password, you must supply one using the `-P, --pass` argument.
+If you wish for your keys to have a password, you must supply one using the `-P, --pass` option.
 
 ```shell
 generate --new --algorithm rsa --bits 4096 --pass "YourPassword" --passin "IncomingPassword" --passout "OutgoingPassword"
 ```
 
-<br />
+<br>
+<br>
 
 ##### ECC
 
-<br />
+<br>
 
 To generate `ECC` / `ECDSA`:
 
@@ -1151,7 +1266,7 @@ To generate `ECC` / `ECDSA`:
 generate --new --algorithm ecc --pass "YourPassword"
 ```
 
-<br />
+<br>
 
 If you are creating new keys based on existing keys with passwords, you can specify `--passin` and `--passout`
 
@@ -1159,7 +1274,7 @@ If you are creating new keys based on existing keys with passwords, you can spec
 generate --new --algorithm ecc --pass "YourPassword" --passin "YourPassword" --passout "YourPassword"
 ```
 
-<br />
+<br>
 
 You can also specify the **curve** to use, however, when generating ECC keys, `secp384r1` is the default. The available options are the same as offered by OpenSSL.
 
@@ -1174,12 +1289,12 @@ You can also specify the **curve** to use, however, when generating ECC keys, `s
 generate --new --algorithm ecc --curve "secp384r1"
 ```
 
-<br />
+<br>
 
 > [!NOTE]
 > As a security precaution so that you don't overwrite existing private keys, you **must** ensure you do not have any existing keys sitting in the folders. Even with using the `-n, --new` arguments; it will warn you about the existing keys and abort.
 
-<br />
+<br>
 
 > [!NOTE]
 > One of the keys that this script generates is a password protected OpenSSH private key located in the folders:
@@ -1190,7 +1305,7 @@ generate --new --algorithm ecc --curve "secp384r1"
 >
 > If you do not specify a password, this key will be skipped.
 
-<br />
+<br>
 
 #### Existing Key Generation
 
@@ -1198,20 +1313,20 @@ This mode allows you to import your own private keys which will be used in order
 
 There are two ways you can accomplish importing your own SSL keys:
 
-- [Using the `--import` argument](#option-1---import-argument)
+- [Using the `--import` option](#option-1---import-option)
 - [Manually copy/paste existing keys](#option-2-manual-import) 
 
-<br />
+<br>
 
-##### Option 1: --import argument
+##### Option 1: --import option
 
-This option involves the usage of the `--import` argument:
+This option involves the usage of the `--import` option:
 
 ```shell
 generate --import "/path/to/private-key.pem" 
 ```
 
-<br />
+<br>
 
 If your existing key has a password, append `--pass` to your import command:
 
@@ -1219,14 +1334,14 @@ If your existing key has a password, append `--pass` to your import command:
 generate --import "/path/to/private-key.pem"  --pass "MyKeyPassword"
 ```
 
-<br />
+<br>
 
 The utility will confirm that the key is correct, and also test to ensure you got the right password before it continues. Once your key has been validated, your existing private key will be copied from the specified `--import` path over to one of the following locations:
 
 - 📁 `certificates/rootCA/rootCA.key.main-01.enc.priv.pem`
 - 📁 `certificates/rootCA/rootCA.key.main-01.unc.priv.pem`
 
-<br />
+<br>
 
 If your private key was unencrypted, it will be placed in the file ending with `main-01.unc.priv.pem`, and then an encrypted copy will be made.
 
@@ -1234,8 +1349,8 @@ If your private key was encrypted, it will be placed in the file ending with `ma
 
 From this point, the utility will continue generating the other keys and certificates based on your private key.
 
-<br />
-<br />
+<br>
+<br>
 
 ##### Option 2: Manual Import
 
@@ -1243,7 +1358,7 @@ This option involves you manually copying over your existing private key to the 
 
 - 📁 `certificates/rootCA/rootCA.key.main-01.enc.priv.pem`
 
-<br />
+<br>
 
 Bare in mind that this utility generate numerous layers of keys:
 
@@ -1251,7 +1366,7 @@ Bare in mind that this utility generate numerous layers of keys:
 - domain
 - master
 
-<br />
+<br>
 
 If you want to provide your own rootCA and domain private keys, you need to place your existing keys in the folders:
 
@@ -1259,7 +1374,7 @@ If you want to provide your own rootCA and domain private keys, you need to plac
 - 📁 `certificates/domain/domain.key.main-01.enc.priv.pem`
 - 📁 `certificates/master/9a.key.main-01.enc.priv.pem`
 
-<br />
+<br>
 
 By doing this, only new public keys and certificates will be generated for all three layers. No new private keys will be generated. The utility only generates new private keys when there are no available private keys in any of the folders.
 
@@ -1269,7 +1384,7 @@ When you are ready to update / generate new keys based on your imported ones, ex
 generate --name "Friendly Name" --days 365 --comment "Renewal for existing keys"
 ```
 
-<br />
+<br>
 
 If your existing private keys contain a password, you must supply that password:
 
